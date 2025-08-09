@@ -53,8 +53,9 @@ export default function MyServices() {
       return () => unsubscribe();
     } else if (!authLoading) {
         setLoadingServices(false);
+        router.push('/login');
     }
-  }, [user, authLoading, toast]);
+  }, [user, authLoading, toast, router]);
 
   const handleDelete = async (serviceId: string, imageUrl?: string) => {
     setIsDeleting(serviceId);
@@ -85,10 +86,18 @@ export default function MyServices() {
     }
   };
 
-  if (authLoading || (!user && !authLoading && !loadingServices)) {
+  if (authLoading || loadingServices) {
     return (
         <main className="container min-h-screen flex flex-col items-center justify-center text-center py-10">
-        {authLoading ? <Loader2 className="h-12 w-12 animate-spin text-primary"/> : (
+            <Loader2 className="h-12 w-12 animate-spin text-primary"/>
+        </main>
+    );
+  }
+  
+  if (!user) {
+    // This case should ideally not be reached due to the redirect in useEffect, but it's a good fallback.
+    return (
+         <main className="container min-h-screen flex flex-col items-center justify-center text-center py-10">
             <Card className="w-full max-w-md p-8">
                 <CardTitle className="text-2xl font-bold mb-4">Acceso Denegado</CardTitle>
                 <CardDescription className="mb-6">
@@ -101,10 +110,10 @@ export default function MyServices() {
                     </Link>
                 </Button>
             </Card>
-        )}
       </main>
-    );
+    )
   }
+
 
   return (
     <div className="container py-10">
@@ -125,12 +134,7 @@ export default function MyServices() {
         </Button>
       </div>
 
-      {loadingServices ? (
-        <div className="text-center py-20">
-            <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Cargando tus servicios...</p>
-        </div>
-      ) : services.length === 0 ? (
+      {services.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
           <h3 className="text-xl font-semibold">Aún no has publicado servicios</h3>
           <p className="text-muted-foreground mt-2 mb-4">¡Empieza a ofrecer tus habilidades a la comunidad!</p>
