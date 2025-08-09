@@ -2,16 +2,18 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, getDocs, collection, query, where, limit } from 'firebase/firestore';
+import { doc, getDoc, collection, query, onSnapshot, addDoc, Timestamp, orderBy } from 'firebase/firestore';
 import { db, auth } from '@/services/firebase';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, MessageSquare, Share2 } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageSquare, Share2, Star } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 
 interface Service {
   title: string;
@@ -26,16 +28,34 @@ interface UserProfile {
     photoURL?: string;
 }
 
+interface Review {
+    id: string;
+    userId: string;
+    userName: string;
+    userAvatar: string;
+    rating: number;
+    comment: string;
+    createdAt: Timestamp;
+}
+
+
 export default function ServiceDetail() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
   const serviceId = params.id as string;
 
-  const [user, authLoading] = useAuthState(auth);
+  const [currentUser, authLoading] = useAuthState(auth);
   const [service, setService] = useState<Service | null>(null);
   const [provider, setProvider] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewComment, setReviewComment] = useState("");
+  const [reviewRating, setReviewRating] = useState(0);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(false);
+
 
   useEffect(() => {
     if (!serviceId) return;
@@ -50,17 +70,21 @@ export default function ServiceDetail() {
           const serviceData = serviceDocSnap.data() as Service;
           setService(serviceData);
 
-          // Fetch provider info - assuming a 'users' collection exists
-          // For now, we will mock it if a dedicated user profile doesn't exist.
           if (serviceData.userId) {
-             // This is a placeholder. In a real app, you'd fetch from a `users` collection
-             // using `doc(db, 'users', serviceData.userId)`.
-             // We'll try to find the user by UID in the auth system as a fallback.
-             // This is not efficient and should be replaced with a user profile collection.
-             setProvider({
-                 displayName: 'Proveedor Anónimo',
-                 photoURL: ''
-             });
+            const userRef = doc(db, "users", serviceData.userId);
+            const userSnap = await getDoc(userRef);
+            if(userSnap.exists()){
+                const userData = userSnap.data();
+                setProvider({
+                    displayName: userData.displayName ?? 'Proveedor',
+                    photoURL: userData.photoURL ?? ''
+                });
+            } else {
+                 setProvider({
+                    displayName: 'Proveedor Anónimo',
+                    photoURL: ''
+                 });
+            }
           }
 
         } else {
@@ -86,6 +110,26 @@ export default function ServiceDetail() {
     fetchServiceAndProvider();
   }, [serviceId, router, toast]);
 
+  // Effect for fetching reviews
+  useEffect(() => {
+      if(!serviceId) return;
+
+      const reviewsQuery = query(collection(db, `services/${serviceId}/reviews`), orderBy('createdAt', 'desc'));
+      const unsubscribe = onSnapshot(reviewsQuery, (snapshot) => {
+          const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
+          setReviews(reviewsData);
+
+          // Check if current user has already reviewed
+          if(currentUser) {
+              const userReview = reviewsData.find(r => r.userId === currentUser.uid);
+              setHasReviewed(!!userReview);
+          }
+      });
+      
+      return () => unsubscribe();
+
+  }, [serviceId, currentUser])
+
   const handleShare = () => {
     if(navigator.share) {
         navigator.share({
@@ -102,7 +146,7 @@ export default function ServiceDetail() {
   };
 
   const handleContact = () => {
-    if (!user) {
+    if (!currentUser) {
         toast({
             variant: 'destructive',
             title: 'Acción requerida',
@@ -111,7 +155,7 @@ export default function ServiceDetail() {
         router.push('/login');
         return;
     }
-    if (user.uid === service?.userId) {
+    if (currentUser.uid === service?.userId) {
         toast({
             title: 'Este es tu servicio',
             description: 'No puedes iniciar un chat contigo mismo.',
@@ -120,6 +164,38 @@ export default function ServiceDetail() {
     }
     router.push(`/chat?contact=${service?.userId}`);
   };
+
+  const handleReviewSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if(!currentUser || !serviceId) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para dejar una reseña.' });
+          return;
+      }
+      if(reviewRating === 0 || !reviewComment.trim()){
+          toast({ variant: 'destructive', title: 'Error', description: 'Por favor, selecciona una calificación y escribe un comentario.' });
+          return;
+      }
+
+      setIsSubmittingReview(true);
+      try {
+          await addDoc(collection(db, `services/${serviceId}/reviews`), {
+              userId: currentUser.uid,
+              userName: currentUser.displayName,
+              userAvatar: currentUser.photoURL,
+              rating: reviewRating,
+              comment: reviewComment,
+              createdAt: Timestamp.now()
+          });
+          toast({ title: '¡Gracias!', description: 'Tu reseña ha sido publicada.' });
+          setReviewComment("");
+          setReviewRating(0);
+      } catch (error) {
+          console.error("Error submitting review:", error);
+          toast({ variant: 'destructive', title: 'Error', description: 'No se pudo publicar tu reseña.' });
+      } finally {
+          setIsSubmittingReview(false);
+      }
+  }
 
 
   if (loading || authLoading) {
@@ -134,7 +210,8 @@ export default function ServiceDetail() {
     return null; // Or a more comprehensive "Not Found" component
   }
   
-  const isOwner = user && user.uid === service.userId;
+  const isOwner = currentUser && currentUser.uid === service.userId;
+  const canReview = !isOwner && currentUser && !hasReviewed;
 
   return (
     <main className="container py-10">
@@ -151,7 +228,7 @@ export default function ServiceDetail() {
       </div>
 
       <div className='grid md:grid-cols-3 gap-8'>
-        <div className='md:col-span-2'>
+        <div className='md:col-span-2 space-y-8'>
             <Card className="overflow-hidden">
                 {service.imageUrl && (
                     <div className="relative w-full h-64 md:h-96">
@@ -176,6 +253,76 @@ export default function ServiceDetail() {
                 <CardDescription className="text-base md:text-lg whitespace-pre-wrap">
                     {service.description}
                 </CardDescription>
+                </CardContent>
+            </Card>
+
+            {/* Reviews Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle>Reseñas y Calificaciones</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {canReview && (
+                        <form onSubmit={handleReviewSubmit} className="mb-6 space-y-4 p-4 border rounded-lg">
+                           <h4 className='font-semibold'>Deja tu opinión</h4>
+                           <div className='flex items-center gap-2'>
+                                <Label>Tu calificación:</Label>
+                                <div className='flex'>
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <Star
+                                            key={star}
+                                            className={`cursor-pointer h-6 w-6 ${reviewRating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`}
+                                            onClick={() => setReviewRating(star)}
+                                        />
+                                    ))}
+                                </div>
+                           </div>
+                           <div>
+                                <Label htmlFor="comment">Tu comentario:</Label>
+                                <Textarea 
+                                    id="comment" 
+                                    value={reviewComment}
+                                    onChange={(e) => setReviewComment(e.target.value)}
+                                    placeholder="¿Qué te pareció el servicio?"
+                                    disabled={isSubmittingReview}
+                                />
+                           </div>
+                           <Button type="submit" disabled={isSubmittingReview}>
+                               {isSubmittingReview ? <Loader2 className='mr-2 animate-spin' /> : null}
+                               Publicar Reseña
+                           </Button>
+                        </form>
+                    )}
+                    {hasReviewed && <p className='text-center text-muted-foreground p-4 border rounded-lg mb-6'>Ya has dejado una reseña para este servicio. ¡Gracias!</p>}
+                    
+                    <div className='space-y-6'>
+                        {reviews.length > 0 ? (
+                            reviews.map(review => (
+                                <div key={review.id} className='flex gap-4'>
+                                    <Avatar>
+                                        <AvatarImage src={review.userAvatar} />
+                                        <AvatarFallback>{review.userName.charAt(0)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <div className='flex items-center gap-2'>
+                                            <p className='font-semibold'>{review.userName}</p>
+                                            <span className='text-xs text-muted-foreground'>
+                                                {review.createdAt.toDate().toLocaleDateString()}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center">
+                                            {[1, 2, 3, 4, 5].map((star) => (
+                                                <Star key={star} className={`h-4 w-4 ${review.rating >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
+                                            ))}
+                                        </div>
+                                        <p className='mt-1 text-sm text-muted-foreground'>{review.comment}</p>
+                                    </div>
+                                </div>
+                            ))
+                        ) : (
+                            <p className='text-center text-muted-foreground py-8'>Aún no hay reseñas para este servicio. ¡Sé el primero!</p>
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>
@@ -211,8 +358,6 @@ export default function ServiceDetail() {
             </Card>
         </div>
       </div>
-
-
     </main>
   );
 }
