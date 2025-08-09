@@ -14,7 +14,6 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import type { Metadata } from 'next';
 
 interface Service {
   title: string;
@@ -37,49 +36,6 @@ interface Review {
     rating: number;
     comment: string;
     createdAt: Timestamp;
-}
-
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const serviceId = params.id;
-  try {
-    const serviceDocRef = doc(db, 'services', serviceId);
-    const serviceDocSnap = await getDoc(serviceDocRef);
-
-    if (!serviceDocSnap.exists()) {
-      return {
-        title: 'Servicio no encontrado',
-        description: 'El servicio que buscas no existe o fue eliminado.',
-      };
-    }
-
-    const service = serviceDocSnap.data() as Service;
-
-    const pageTitle = `${service.title} | ServiciosApp Lite`;
-    const pageDescription = service.description.substring(0, 155);
-
-    return {
-      title: pageTitle,
-      description: pageDescription,
-      openGraph: {
-          title: pageTitle,
-          description: pageDescription,
-          images: service.imageUrl ? [service.imageUrl] : ['/og-image.png'],
-          type: 'article',
-      },
-      twitter: {
-          card: 'summary_large_image',
-          title: pageTitle,
-          description: pageDescription,
-          images: service.imageUrl ? [service.imageUrl] : ['/og-image.png'],
-      }
-    };
-  } catch (error) {
-     console.error("Error generating metadata:", error);
-     return {
-        title: "Error",
-        description: "No se pudo cargar la información para esta página."
-     }
-  }
 }
 
 export default function ServiceDetail() {
