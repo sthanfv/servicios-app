@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -154,21 +155,28 @@ export default function ServiceDetail() {
   };
 
   const handleShare = async () => {
+    const shareData = {
+      title: service?.title,
+      text: `Mira este servicio: ${service?.title}`,
+      url: window.location.href,
+    };
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: service?.title,
-          text: `Mira este servicio: ${service?.title}`,
-          url: window.location.href,
-        });
+        await navigator.share(shareData);
         toast({ title: '¡Compartido!', description: 'El enlace al servicio ha sido compartido.' });
       } catch (error) {
-        // Fallback to clipboard if share API fails (e.g., permission denied)
-        console.error('Error al compartir, recurriendo a copiar:', error);
-        copyToClipboard();
+        // This error is often a "Permission Denied" error, which we can safely ignore
+        // and fall back to the clipboard method.
+        if (error instanceof DOMException && error.name === 'AbortError') {
+            // User cancelled the share sheet
+        } else {
+            // Fallback for other errors or browsers that fail to share
+            copyToClipboard();
+        }
       }
     } else {
-      // Fallback for browsers that do not support the share API
+      // Fallback for browsers that do not support the Share API
       copyToClipboard();
     }
   };
