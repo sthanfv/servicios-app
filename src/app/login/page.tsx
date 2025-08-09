@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -126,6 +127,12 @@ export default function Login() {
               <GoogleIcon className="mr-2 h-5 w-5" />
               Google
             </Button>
+            <p className="text-center text-sm text-muted-foreground">
+              ¿No tienes una cuenta?{' '}
+              <Link href="/signup" className="font-semibold text-primary underline-offset-4 hover:underline">
+                Regístrate
+              </Link>
+            </p>
           </CardFooter>
         </form>
       </Card>
