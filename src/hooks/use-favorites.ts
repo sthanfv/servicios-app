@@ -1,24 +1,25 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { doc, updateDoc, arrayUnion, arrayRemove, onSnapshot } from 'firebase/firestore';
+import { doc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { db } from '@/services/firebase';
 import { useUserData } from './use-user-data';
 import { useToast } from './use-toast';
+import { useRouter } from 'next/navigation';
 
 export function useFavorites(serviceId: string) {
-  const { user, userData } = useUserData();
+  const { user, userData, loading: userLoading } = useUserData();
   const [isFavorited, setIsFavorited] = useState(false);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const router = useRouter();
 
   useEffect(() => {
-    if (userData) {
+    setLoading(true);
+    if (user && userData) {
       setIsFavorited(userData.favoriteServices?.includes(serviceId) ?? false);
-      setLoading(false);
-    } else if (!user) {
-        // if user is not logged in, not loading
-        setLoading(false)
     }
+    // We are done loading once we have checked the user/userData status.
+    setLoading(false);
   }, [userData, serviceId, user]);
 
   const toggleFavorite = useCallback(async () => {
@@ -28,8 +29,11 @@ export function useFavorites(serviceId: string) {
         title: 'Acción requerida',
         description: 'Debes iniciar sesión para añadir a favoritos.',
       });
+      // Redirect to login page if user is not authenticated
+      router.push('/login');
       return;
     }
+
     setLoading(true);
 
     const userDocRef = doc(db, 'users', user.uid);
@@ -39,13 +43,14 @@ export function useFavorites(serviceId: string) {
           favoriteServices: arrayRemove(serviceId),
         });
         toast({ title: 'Eliminado de favoritos' });
+        setIsFavorited(false);
       } else {
         await updateDoc(userDocRef, {
           favoriteServices: arrayUnion(serviceId),
         });
         toast({ title: 'Añadido a favoritos' });
+        setIsFavorited(true);
       }
-      setIsFavorited(prev => !prev);
     } catch (error) {
       console.error("Error updating favorites:", error);
       toast({
@@ -56,7 +61,7 @@ export function useFavorites(serviceId: string) {
     } finally {
       setLoading(false);
     }
-  }, [isFavorited, serviceId, user, toast]);
+  }, [isFavorited, serviceId, user, toast, router]);
 
-  return { isFavorited, toggleFavorite, loading };
+  return { isFavorited, toggleFavorite, loading: loading || userLoading };
 }

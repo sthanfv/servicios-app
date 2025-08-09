@@ -164,12 +164,9 @@ export default function ServiceDetail() {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-        toast({ title: '¡Compartido!', description: 'El enlace al servicio ha sido compartido.' });
       } catch (error) {
-        // This error is often a "Permission Denied" error, which we can safely ignore
-        // and fall back to the clipboard method.
         if (error instanceof DOMException && error.name === 'AbortError') {
-            // User cancelled the share sheet
+            // User cancelled the share sheet, do nothing.
         } else {
             // Fallback for other errors or browsers that fail to share
             copyToClipboard();
