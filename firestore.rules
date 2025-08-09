@@ -1,62 +1,69 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
-    function isSignedIn() {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
       return request.auth != null;
     }
-
+    
+    // Helper function to check if user is owner of a document
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // Users collection
+    // Rules for 'users' collection
     match /users/{userId} {
-      // Any signed in user can create their own profile document
-      create: if isSignedIn() && isOwner(userId);
-      // Public read for anyone
-      read: if true;
-      // Only the owner can update their profile (e.g. favorites)
-      update: if isSignedIn() && isOwner(userId);
-      // Users should not be able to delete their profiles for now
-      delete: if false;
+      // Anyone can see public profile info
+      allow get: if true;
+      // Only the authenticated owner can create or update their own profile
+      allow create, update: if isAuthenticated() && isOwner(userId);
+      // Deletion of users is typically handled by server-side admin logic
+      allow delete: if false; 
     }
 
-    // Services collection
+    // Rules for 'services' collection
     match /services/{serviceId} {
-      // Anyone can read services
-      read: if true;
-      // Signed in users can create services
-      create: if isSignedIn();
-      // Only the owner can update or delete their service
-      update, delete: if isSignedIn() && isOwner(resource.data.userId);
+      // Anyone can view a service
+      allow get: if true;
+      // Only authenticated users can create a service
+      allow create: if isAuthenticated();
+      // Only the owner of the service can update or delete it
+      allow update, delete: if isAuthenticated() && isOwner(resource.data.userId);
 
-      // Reviews subcollection
+      // Rules for 'reviews' subcollection
       match /reviews/{reviewId} {
-        // Anyone can read reviews
-        read: if true;
-        // Signed in users can create reviews, but not for their own services
-        create: if isSignedIn() && get(/databases/$(database)/documents/services/$(serviceId)).data.userId != request.auth.uid;
-        // Users cannot update or delete reviews for now
-        update, delete: if false;
+        // Any authenticated user can read reviews
+        allow read: if isAuthenticated();
+        // Only authenticated users who are NOT the service owner can create a review
+        // And a user can only create one review per service.
+        allow create: if isAuthenticated() 
+                      && request.auth.uid != get(/databases/$(database)/documents/services/$(serviceId)).data.userId
+                      && !exists(/databases/$(database)/documents/services/$(serviceId)/reviews/$(request.auth.uid));
+        // Reviews are immutable
+        allow update, delete: if false;
       }
     }
 
-    // Chats collection
+    // Rules for 'chats' collection and 'messages' subcollection
     match /chats/{chatId} {
-      // Read/Write is only allowed if the user is a participant in the chat
-      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
-      
-      // Messages subcollection
+      // Users can only access chats they are participants in
+      allow get, list: if isAuthenticated() && request.auth.uid in resource.data.participants;
+      allow create: if isAuthenticated() && request.auth.uid in request.resource.data.participants;
+      allow update: if isAuthenticated() && request.auth.uid in resource.data.participants;
+
+      // Rules for 'messages' subcollection
       match /messages/{messageId} {
-         // Creating a message is allowed if the user is a participant in the parent chat
-         create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
          // Only participants can read messages
-         read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-         // Messages cannot be updated or deleted
-         update, delete: if false;
+        allow get, list: if isAuthenticated() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        // Only participants can send messages
+        allow create: if isAuthenticated() 
+                      && isOwner(request.resource.data.senderId)
+                      && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        // Messages are immutable
+        allow update, delete: if false;
       }
     }
   }
