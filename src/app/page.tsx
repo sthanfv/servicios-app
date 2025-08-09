@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare, Briefcase } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -119,6 +119,7 @@ export default function Home() {
       } as Service));
       
       setAllServices(servicesData);
+      setFilteredServices(servicesData);
 
       const uniqueCategories = [...new Set(servicesData.map(s => s.category))];
       setCategories(uniqueCategories);
@@ -131,7 +132,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    let services = allServices;
+    let services = [...allServices];
 
     if (debouncedSearchTerm) {
       const lowercasedTerm = debouncedSearchTerm.toLowerCase();
@@ -149,84 +150,115 @@ export default function Home() {
   }, [debouncedSearchTerm, selectedCategory, allServices]);
 
   return (
-    <div className="container py-10">
-       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-primary">
-          Encuentra Servicios
-        </h1>
+    <div className="flex flex-col min-h-screen">
+       <header className="container flex justify-between items-center py-4">
+        <Link href="/" className="flex items-center gap-2">
+          <Briefcase className="h-8 w-8 text-primary" />
+          <h1 className="text-xl font-bold">
+            ServiciosApp Lite
+          </h1>
+        </Link>
         <div className="flex items-center gap-4">
             <UserMenu />
         </div>
       </header>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder="Buscar por título o descripción..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </div>
-        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full md:w-[200px]">
-                <SelectValue placeholder="Categorías" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="all">Todas las categorías</SelectItem>
-                {categories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-      </div>
-      
-      {loading ? (
-        <div className="text-center py-20">
-             <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-            <p className="mt-4 text-muted-foreground">Cargando servicios...</p>
-        </div>
-      ) : filteredServices.length === 0 ? (
-         <div className="text-center py-20 border-2 border-dashed rounded-lg">
-            <h3 className="text-xl font-semibold">No se encontraron servicios</h3>
-            <p className="text-muted-foreground mt-2">Intenta ajustar tu búsqueda o filtros.</p>
-        </div>
-      ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredServices.map((service) => (
-            <Link href={`/service/${service.id}`} key={service.id} className="group">
-              <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                {service.imageUrl ? (
-                  <div className="relative w-full h-48">
-                    <Image
-                      src={service.imageUrl}
-                      alt={service.title}
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-t-lg"
-                      data-ai-hint="product image"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
-                    <span className="text-muted-foreground">Sin imagen</span>
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle>{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="flex-grow">
-                  <p className="text-muted-foreground line-clamp-3">{service.description}</p>
-                </CardContent>
-                <CardFooter>
-                  <Badge variant="secondary">{service.category}</Badge>
-                </CardFooter>
-              </Card>
-            </Link>
-          ))}
-        </div>
-      )}
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="container text-center py-16 md:py-24">
+            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 text-primary">
+                Encuentra y publica servicios locales con facilidad
+            </h1>
+            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
+                Tu plataforma minimalista para conectar con profesionales y clientes en tu área. Rápido, seguro y directo.
+            </p>
+            <div className="flex justify-center gap-4">
+                <Button size="lg" asChild>
+                    <Link href="/add">Publicar un Servicio</Link>
+                </Button>
+                 <Button size="lg" variant="outline" onClick={() => document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                    Explorar Servicios
+                </Button>
+            </div>
+        </section>
+
+        {/* Services Section */}
+        <section id="services-section" className="container py-10">
+          <div className="flex flex-col md:flex-row gap-4 mb-8">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+              <Input 
+                placeholder="Buscar por título o descripción..."
+                className="pl-10"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full md:w-[200px]">
+                    <SelectValue placeholder="Categorías" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+          </div>
+          
+          {loading ? (
+            <div className="text-center py-20">
+                <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+                <p className="mt-4 text-muted-foreground">Cargando servicios...</p>
+            </div>
+          ) : filteredServices.length === 0 ? (
+            <div className="text-center py-20 border-2 border-dashed rounded-lg">
+                <h3 className="text-xl font-semibold">No se encontraron servicios</h3>
+                <p className="text-muted-foreground mt-2">Intenta ajustar tu búsqueda o filtros.</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredServices.map((service) => (
+                <Link href={`/service/${service.id}`} key={service.id} className="group">
+                  <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
+                    {service.imageUrl ? (
+                      <div className="relative w-full h-48">
+                        <Image
+                          src={service.imageUrl}
+                          alt={service.title}
+                          layout="fill"
+                          objectFit="cover"
+                          className="rounded-t-lg"
+                          data-ai-hint="product image"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
+                        <span className="text-muted-foreground">Sin imagen</span>
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle>{service.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                      <p className="text-muted-foreground line-clamp-3">{service.description}</p>
+                    </CardContent>
+                    <CardFooter>
+                      <Badge variant="secondary">{service.category}</Badge>
+                    </CardFooter>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+      <footer className="container text-center py-6 text-muted-foreground">
+        <p>&copy; {new Date().getFullYear()} ServiciosApp Lite. Todos los derechos reservados.</p>
+      </footer>
     </div>
   );
 }
+
+    
