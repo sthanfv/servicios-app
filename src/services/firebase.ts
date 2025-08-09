@@ -3,12 +3,13 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyChPS_1_hJd-dZ0dDBIqjBw1P4xS3iT0mM",
-  authDomain: "serviciosapp-lite.firebaseapp.com",
-  projectId: "serviciosapp-lite",
-  storageBucket: "serviciosapp-lite.appspot.com",
-  messagingSenderId: "326287510871",
-  appId: "1:326287510871:web:80825bd1210a6977234212"
+  apiKey: "AIzaSyDthcJvJztbAKpI_7Aj4wBOST-JgujnDBk",
+  authDomain: "servicios-app-afc3d.firebaseapp.com",
+  projectId: "servicios-app-afc3d",
+  storageBucket: "servicios-app-afc3d.appspot.com",
+  messagingSenderId: "623262662376",
+  appId: "1:623262662376:web:9eec57eef75049493d135d",
+  measurementId: "G-WZFDKMZB9L"
 };
 
 
