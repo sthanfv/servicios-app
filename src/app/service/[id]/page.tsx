@@ -8,12 +8,13 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, MessageSquare, Share2, Star } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageSquare, Share2, Star, Heart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { useFavorites } from '@/hooks/use-favorites';
 
 interface Service {
   title: string;
@@ -36,6 +37,24 @@ interface Review {
     rating: number;
     comment: string;
     createdAt: Timestamp;
+}
+
+function FavoriteButton({ serviceId }: { serviceId: string }) {
+    const { isFavorited, toggleFavorite, loading } = useFavorites(serviceId);
+
+    if (loading) {
+        return (
+            <Button variant="outline" size="icon" disabled>
+                <Loader2 className="h-4 w-4 animate-spin" />
+            </Button>
+        );
+    }
+
+    return (
+        <Button variant="outline" size="icon" onClick={toggleFavorite} aria-label="Toggle Favorite">
+            <Heart className={`transition-all ${isFavorited ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+        </Button>
+    )
 }
 
 export default function ServiceDetail() {
@@ -227,6 +246,7 @@ export default function ServiceDetail() {
           <ArrowLeft />
         </Button>
         <div className='flex gap-2'>
+            {currentUser && !isOwner && <FavoriteButton serviceId={serviceId} />}
             <Button variant="outline" onClick={handleShare}>
                 <Share2 className="mr-2" />
                 Compartir

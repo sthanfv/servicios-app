@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/services/firebase';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 interface UserData {
@@ -11,6 +11,7 @@ interface UserData {
   email: string;
   role: 'user' | 'admin';
   createdAt: any;
+  favoriteServices?: string[];
 }
 
 export function useUserData() {
@@ -22,9 +23,9 @@ export function useUserData() {
     let unsubscribe;
     if (user) {
       const userRef = doc(db, 'users', user.uid);
-      unsubscribe = onSnapshot(userRef, (doc) => {
-        if (doc.exists()) {
-          setUserData(doc.data() as UserData);
+      unsubscribe = onSnapshot(userRef, (docSnap) => {
+        if (docSnap.exists()) {
+          setUserData(docSnap.data() as UserData);
         } else {
           setUserData(null);
         }

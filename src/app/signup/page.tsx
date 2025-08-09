@@ -40,7 +40,8 @@ export default function SignUp() {
           displayName: displayName,
           email: user.email,
           createdAt: Timestamp.now(),
-          role: 'user' // Default role
+          role: 'user', // Default role
+          favoriteServices: [] // Initialize favorites
         });
       }
 

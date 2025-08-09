@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare, Briefcase, Shield } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare, Briefcase, Shield, Heart } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -75,6 +75,10 @@ function UserMenu() {
                 <DropdownMenuItem onSelect={() => router.push('/chat')}>
                     <MessageSquare className="mr-2 h-4 w-4" />
                     <span>Mis Chats</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => router.push('/favorites')}>
+                    <Heart className="mr-2 h-4 w-4" />
+                    <span>Mis Favoritos</span>
                 </DropdownMenuItem>
                 {userData.role === 'admin' && (
                     <DropdownMenuItem onSelect={() => router.push('/admin')}>
