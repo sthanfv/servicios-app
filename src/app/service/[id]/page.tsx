@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, getDocs, collection, query, where, limit } from 'firebase/firestore';
 import { db, auth } from '@/services/firebase';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, Loader2, MessageSquare, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface Service {
   title: string;
@@ -18,6 +19,11 @@ interface Service {
   category: string;
   imageUrl?: string;
   userId: string;
+}
+
+interface UserProfile {
+    displayName: string;
+    photoURL?: string;
 }
 
 export default function ServiceDetail() {
@@ -28,19 +34,35 @@ export default function ServiceDetail() {
 
   const [user, authLoading] = useAuthState(auth);
   const [service, setService] = useState<Service | null>(null);
+  const [provider, setProvider] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!serviceId) return;
 
-    const fetchService = async () => {
+    const fetchServiceAndProvider = async () => {
       setLoading(true);
       try {
-        const docRef = doc(db, 'services', serviceId);
-        const docSnap = await getDoc(docRef);
+        const serviceDocRef = doc(db, 'services', serviceId);
+        const serviceDocSnap = await getDoc(serviceDocRef);
 
-        if (docSnap.exists()) {
-          setService(docSnap.data() as Service);
+        if (serviceDocSnap.exists()) {
+          const serviceData = serviceDocSnap.data() as Service;
+          setService(serviceData);
+
+          // Fetch provider info - assuming a 'users' collection exists
+          // For now, we will mock it if a dedicated user profile doesn't exist.
+          if (serviceData.userId) {
+             // This is a placeholder. In a real app, you'd fetch from a `users` collection
+             // using `doc(db, 'users', serviceData.userId)`.
+             // We'll try to find the user by UID in the auth system as a fallback.
+             // This is not efficient and should be replaced with a user profile collection.
+             setProvider({
+                 displayName: 'Proveedor Anónimo',
+                 photoURL: ''
+             });
+          }
+
         } else {
           toast({
             variant: 'destructive',
@@ -61,7 +83,7 @@ export default function ServiceDetail() {
       }
     };
 
-    fetchService();
+    fetchServiceAndProvider();
   }, [serviceId, router, toast]);
 
   const handleShare = () => {
@@ -89,8 +111,13 @@ export default function ServiceDetail() {
         router.push('/login');
         return;
     }
-    // For now, it just navigates to a general chat page
-    // In a real implementation, you'd pass the provider's ID
+    if (user.uid === service?.userId) {
+        toast({
+            title: 'Este es tu servicio',
+            description: 'No puedes iniciar un chat contigo mismo.',
+        });
+        return;
+    }
     router.push(`/chat?contact=${service?.userId}`);
   };
 
@@ -111,17 +138,11 @@ export default function ServiceDetail() {
 
   return (
     <main className="container py-10">
-       <div className="flex justify-between items-center mb-8">
+       <div className="flex justify-between items-center mb-4">
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft />
         </Button>
         <div className='flex gap-2'>
-            {!isOwner && (
-                 <Button onClick={handleContact}>
-                    <MessageSquare className="mr-2" />
-                    Contactar
-                </Button>
-            )}
             <Button variant="outline" onClick={handleShare}>
                 <Share2 className="mr-2" />
                 Compartir
@@ -129,31 +150,69 @@ export default function ServiceDetail() {
         </div>
       </div>
 
-      <Card className="overflow-hidden">
-        {service.imageUrl && (
-            <div className="relative w-full h-64 md:h-96">
-                <Image
-                    src={service.imageUrl}
-                    alt={service.title}
-                    layout="fill"
-                    objectFit="cover"
-                />
-            </div>
-        )}
-        <CardHeader>
-          <div className='flex justify-between items-start'>
-            <div>
-              <Badge variant="secondary" className="mb-2">{service.category}</Badge>
-              <CardTitle className="text-3xl md:text-4xl font-bold">{service.title}</CardTitle>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <CardDescription className="text-base md:text-lg whitespace-pre-wrap">
-            {service.description}
-          </CardDescription>
-        </CardContent>
-      </Card>
+      <div className='grid md:grid-cols-3 gap-8'>
+        <div className='md:col-span-2'>
+            <Card className="overflow-hidden">
+                {service.imageUrl && (
+                    <div className="relative w-full h-64 md:h-96">
+                        <Image
+                            src={service.imageUrl}
+                            alt={service.title}
+                            layout="fill"
+                            objectFit="cover"
+                        />
+                    </div>
+                )}
+                <CardHeader>
+                <div className='flex justify-between items-start'>
+                    <div>
+                    <Badge variant="secondary" className="mb-2">{service.category}</Badge>
+                    <CardTitle className="text-3xl md:text-4xl font-bold">{service.title}</CardTitle>
+                    </div>
+                </div>
+                </CardHeader>
+                <CardContent>
+                <h3 className='font-bold text-lg mb-2'>Descripción del servicio</h3>
+                <CardDescription className="text-base md:text-lg whitespace-pre-wrap">
+                    {service.description}
+                </CardDescription>
+                </CardContent>
+            </Card>
+        </div>
+
+        <div className='md:col-span-1 space-y-6'>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Contactar al Proveedor</CardTitle>
+                </CardHeader>
+                <CardContent>
+                     {provider && (
+                         <div className='flex items-center gap-4 mb-4'>
+                            <Avatar className="h-12 w-12">
+                                <AvatarImage src={provider.photoURL ?? ''} />
+                                <AvatarFallback>{provider.displayName?.[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p className='font-semibold'>{provider.displayName}</p>
+                                <p className='text-sm text-muted-foreground'>Proveedor verificado</p>
+                            </div>
+                        </div>
+                     )}
+                     
+                    {isOwner ? (
+                        <Button disabled className="w-full">Es tu servicio</Button>
+                    ) : (
+                        <Button onClick={handleContact} className="w-full">
+                            <MessageSquare className="mr-2" />
+                            Enviar Mensaje
+                        </Button>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+      </div>
+
+
     </main>
   );
 }
