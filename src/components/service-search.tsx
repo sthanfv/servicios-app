@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useServiceSearch, Service } from '@/hooks/use-service-search';
 import { Loader2, Search } from 'lucide-react';
+import { Button } from './ui/button';
 
 function ServiceCard({ service }: { service: Service }) {
   return (
@@ -39,6 +40,43 @@ function ServiceCard({ service }: { service: Service }) {
         </CardFooter>
       </Card>
     </Link>
+  );
+}
+
+
+function FeaturedServiceCard({ service }: { service: Service }) {
+  return (
+    <Card className="h-full flex flex-col overflow-hidden group border-primary/20 hover:border-primary transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
+       <Link href={`/service/${service.id}`} className="block">
+        <div className="relative w-full aspect-[4/3]">
+            {service.imageUrl ? (
+            <Image
+                src={service.imageUrl}
+                alt={service.title}
+                layout="fill"
+                objectFit="cover"
+                className="rounded-t-lg"
+                data-ai-hint="featured service"
+            />
+            ) : (
+            <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-lg">
+                <span className="text-muted-foreground">Sin imagen</span>
+            </div>
+            )}
+        </div>
+      </Link>
+      <CardHeader>
+        <CardTitle className="line-clamp-2 text-lg">{service.title}</CardTitle>
+      </CardHeader>
+      <CardContent className="flex-grow">
+         <Badge variant="secondary">{service.category}</Badge>
+      </CardContent>
+      <CardFooter>
+        <Button asChild className="w-full">
+            <Link href={`/service/${service.id}`}>Ver Más</Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }
 
@@ -102,3 +140,6 @@ export function ServiceSearch() {
     </>
   );
 }
+
+ServiceSearch.FeaturedCard = FeaturedServiceCard;
+    

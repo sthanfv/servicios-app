@@ -13,6 +13,7 @@ import { useUserData } from "@/hooks/use-user-data";
 import { ServiceSearch } from "@/components/service-search";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useServiceSearch } from "@/hooks/use-service-search";
 
 
 function UserMenu() {
@@ -103,7 +104,7 @@ function UserMenu() {
 }
 
 export default function Home() {
-
+  const { recentServices, loading: servicesLoading } = useServiceSearch();
   const testimonials = [
     {
       quote: "¡Increíble! Encontré un fontanero en 15 minutos. La app es súper intuitiva y fácil de usar. Totalmente recomendada para cualquier emergencia.",
@@ -158,6 +159,35 @@ export default function Home() {
                  <Button size="lg" variant="outline" onClick={() => document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' })}>
                     Explorar Servicios
                 </Button>
+            </div>
+        </section>
+
+        {/* Recent Services Section */}
+        <section className="py-16">
+            <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold">Novedades</h2>
+                    <p className="text-muted-foreground max-w-xl mx-auto mt-2">
+                        Echa un vistazo a los últimos servicios añadidos por nuestra comunidad.
+                    </p>
+                </div>
+                 <Carousel
+                    opts={{
+                        align: "start",
+                        loop: true,
+                    }}
+                    className="w-full"
+                    >
+                    <CarouselContent>
+                        {recentServices.map((service) => (
+                        <CarouselItem key={service.id} className="md:basis-1/2 lg:basis-1/4">
+                           <ServiceSearch.FeaturedCard service={service} />
+                        </CarouselItem>
+                        ))}
+                    </CarouselContent>
+                    <CarouselPrevious className="hidden md:flex" />
+                    <CarouselNext className="hidden md:flex" />
+                </Carousel>
             </div>
         </section>
 
@@ -272,3 +302,5 @@ export default function Home() {
     </div>
   );
 }
+
+    

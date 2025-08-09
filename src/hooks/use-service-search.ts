@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { db } from '@/services/firebase';
-import { collection, query, where, getDocs, orderBy, Query, DocumentData } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Query, DocumentData, limit } from 'firebase/firestore';
 import { useDebounce } from './use-debounce';
 
 export interface Service {
@@ -17,23 +17,37 @@ export function useServiceSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [services, setServices] = useState<Service[]>([]);
+  const [recentServices, setRecentServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<string[]>([]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   useEffect(() => {
-    // Fetch unique categories only once on mount
-    const fetchCategories = async () => {
+    const fetchInitialData = async () => {
+        setLoading(true);
         try {
+            // Fetch categories
             const servicesSnapshot = await getDocs(query(collection(db, "services")));
             const uniqueCategories = [...new Set(servicesSnapshot.docs.map(doc => doc.data().category as string))];
             setCategories(uniqueCategories);
+
+            // Fetch recent services for the carousel
+            const recentQuery = query(collection(db, 'services'), orderBy('createdAt', 'desc'), limit(4));
+            const recentSnapshot = await getDocs(recentQuery);
+            const recentData = recentSnapshot.docs.map(doc => ({
+                id: doc.id,
+                ...doc.data(),
+            } as Service));
+            setRecentServices(recentData);
+
         } catch (error) {
-            console.error("Error fetching categories:", error);
+            console.error("Error fetching initial data:", error);
+        } finally {
+            setLoading(false);
         }
     };
-    fetchCategories();
+    fetchInitialData();
   }, []);
 
   useEffect(() => {
@@ -42,17 +56,10 @@ export function useServiceSearch() {
       try {
         let servicesQuery: Query<DocumentData> = collection(db, 'services');
 
-        // Build the query dynamically based on filters
         if (selectedCategory !== 'all') {
           servicesQuery = query(servicesQuery, where('category', '==', selectedCategory));
         }
         
-        // Note: Firestore does not support native full-text search.
-        // This client-side filter is a common workaround for smaller-scale apps.
-        // For production apps, a dedicated search service like Algolia or Typesense
-        // integrated with Firebase is the recommended approach.
-        
-        // We always order by creation date to show the newest services first
         servicesQuery = query(servicesQuery, orderBy('createdAt', 'desc'));
 
         const querySnapshot = await getDocs(servicesQuery);
@@ -61,7 +68,6 @@ export function useServiceSearch() {
           ...doc.data(),
         } as Service));
         
-        // Client-side search filtering on the already filtered (by category) data
         if (debouncedSearchTerm) {
             const lowercasedTerm = debouncedSearchTerm.toLowerCase();
             servicesData = servicesData.filter(service => 
@@ -84,6 +90,7 @@ export function useServiceSearch() {
 
   return { 
     services, 
+    recentServices,
     loading, 
     searchTerm, 
     setSearchTerm, 
@@ -92,3 +99,5 @@ export function useServiceSearch() {
     categories 
   };
 }
+
+    
