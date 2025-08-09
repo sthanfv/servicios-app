@@ -1,33 +1,16 @@
 'use client';
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { db, auth } from "@/services/firebase";
-import { collection, onSnapshot, orderBy, query, limit, startAfter, getDocs } from "firebase/firestore";
-import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
-import Image from "next/image";
+import { auth } from "@/services/firebase";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare, Briefcase, Shield, Heart } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useDebounce } from "@/hooks/use-debounce";
 import { useUserData } from "@/hooks/use-user-data";
+import { ServiceSearch } from "@/components/service-search";
 
-
-interface Service {
-  id: string;
-  title: string;
-  description: string;
-  category: string;
-  imageUrl?: string;
-  userId: string;
-}
 
 function UserMenu() {
     const { user, userData, loading: userDataLoading } = useUserData();
@@ -116,113 +99,7 @@ function UserMenu() {
     );
 }
 
-const SERVICES_PER_PAGE = 8;
-
 export default function Home() {
-  const [allServices, setAllServices] = useState<Service[]>([]);
-  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-
-  const [categories, setCategories] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
-  const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  const fetchServices = () => {
-    setLoading(true);
-    const q = query(collection(db, "services"), orderBy("createdAt", "desc"), limit(SERVICES_PER_PAGE));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const servicesData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      } as Service));
-      
-      setAllServices(servicesData);
-      
-      const uniqueCategories = [...new Set(servicesData.map(s => s.category))];
-      setCategories(uniqueCategories);
-      
-      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-      setHasMore(servicesData.length === SERVICES_PER_PAGE);
-
-      setLoading(false);
-    }, (error) => {
-      console.error("Error fetching services:", error);
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  };
-  
-  const fetchMoreServices = async () => {
-    if (!lastDoc || loadingMore || !hasMore) return;
-    
-    setLoadingMore(true);
-    const q = query(
-      collection(db, "services"), 
-      orderBy("createdAt", "desc"), 
-      startAfter(lastDoc), 
-      limit(SERVICES_PER_PAGE)
-    );
-
-    try {
-        const documentSnapshots = await getDocs(q);
-        const newServices = documentSnapshots.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-        } as Service));
-
-        setAllServices(prev => [...prev, ...newServices]);
-        const newLastDoc = documentSnapshots.docs[documentSnapshots.docs.length-1];
-        setLastDoc(newLastDoc);
-        setHasMore(newServices.length === SERVICES_PER_PAGE);
-    } catch (error) {
-        console.error("Error fetching more services:", error);
-        setHasMore(false);
-    } finally {
-        setLoadingMore(false);
-    }
-  }
-
-
-  useEffect(() => {
-    const unsubscribe = fetchServices();
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    let services = [...allServices];
-
-    // Apply search filter
-    if (debouncedSearchTerm) {
-      const lowercasedTerm = debouncedSearchTerm.toLowerCase();
-      services = services.filter(service => 
-        service.title.toLowerCase().includes(lowercasedTerm) ||
-        service.description.toLowerCase().includes(lowercasedTerm)
-      );
-    }
-
-    // Apply category filter
-    if (selectedCategory && selectedCategory !== 'all') {
-      services = services.filter(service => service.category === selectedCategory);
-    }
-
-    setFilteredServices(services);
-     
-    // Disable "load more" when filtering is active
-    const isFiltering = debouncedSearchTerm !== '' || selectedCategory !== 'all';
-    if(isFiltering){
-        setHasMore(false)
-    } else {
-        setHasMore(allServices.length > 0 && allServices.length % SERVICES_PER_PAGE === 0)
-    }
-
-  }, [debouncedSearchTerm, selectedCategory, allServices]);
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
@@ -259,84 +136,7 @@ export default function Home() {
 
         {/* Services Section */}
         <section id="services-section" className="container py-10">
-          <div className="flex flex-col md:flex-row gap-4 mb-8">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-              <Input 
-                placeholder="Buscar por título o descripción..."
-                className="pl-10"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger className="w-full md:w-[200px]">
-                    <SelectValue placeholder="Categorías" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">Todas las categorías</SelectItem>
-                    {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-          </div>
-          
-          {loading ? (
-            <div className="text-center py-20">
-                <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-                <p className="mt-4 text-muted-foreground">Cargando servicios...</p>
-            </div>
-          ) : filteredServices.length === 0 ? (
-            <div className="text-center py-20 border-2 border-dashed rounded-lg">
-                <h3 className="text-xl font-semibold">No se encontraron servicios</h3>
-                <p className="text-muted-foreground mt-2">Intenta ajustar tu búsqueda o filtros.</p>
-            </div>
-          ) : (
-            <>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredServices.map((service) => (
-                  <Link href={`/service/${service.id}`} key={service.id} className="group">
-                    <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                      {service.imageUrl ? (
-                        <div className="relative w-full h-48">
-                          <Image
-                            src={service.imageUrl}
-                            alt={service.title}
-                            layout="fill"
-                            objectFit="cover"
-                            className="rounded-t-lg"
-                            data-ai-hint="service image"
-                          />
-                        </div>
-                      ) : (
-                        <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
-                          <span className="text-muted-foreground">Sin imagen</span>
-                        </div>
-                      )}
-                      <CardHeader>
-                        <CardTitle>{service.title}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="flex-grow">
-                        <p className="text-muted-foreground line-clamp-3">{service.description}</p>
-                      </CardContent>
-                      <CardFooter>
-                        <Badge variant="secondary">{service.category}</Badge>
-                      </CardFooter>
-                    </Card>
-                  </Link>
-                ))}
-              </div>
-              {hasMore && (
-                <div className="mt-10 text-center">
-                  <Button onClick={fetchMoreServices} disabled={loadingMore}>
-                    {loadingMore ? <Loader2 className="mr-2 animate-spin"/> : null}
-                    Cargar más
-                  </Button>
-                </div>
-              )}
-            </>
-          )}
+            <ServiceSearch />
         </section>
 
         {/* CTA Section */}

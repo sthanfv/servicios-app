@@ -7,49 +7,57 @@ service cloud.firestore {
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return request.auth.uid == userId;
     }
 
-    // USERS
-    // Users can read public profiles.
-    // Users can only write to their own document.
+    // Users collection
     match /users/{userId} {
-      allow read: if true;
-      allow create, update, delete: if isOwner(userId);
+      // Any signed in user can create their own profile document
+      create: if isSignedIn() && isOwner(userId);
+      // Public read for anyone
+      read: if true;
+      // Only the owner can update their profile (e.g. favorites)
+      update: if isSignedIn() && isOwner(userId);
+      // Users should not be able to delete their profiles for now
+      delete: if false;
     }
-    
-    // SERVICES
-    // Anyone can read services.
-    // Signed-in users can create services.
-    // Only the owner can update or delete their service.
+
+    // Services collection
     match /services/{serviceId} {
-      allow read: if true;
-      allow create: if isSignedIn();
-      allow update, delete: if isOwner(resource.data.userId);
-      
-      // REVIEWS (subcollection)
-      // Anyone can read reviews.
-      // Signed-in users can create reviews, but not for their own service.
-      // Owner of a review can delete it. Admin can delete any review.
+      // Anyone can read services
+      read: if true;
+      // Signed in users can create services
+      create: if isSignedIn();
+      // Only the owner can update or delete their service
+      update, delete: if isSignedIn() && isOwner(resource.data.userId);
+
+      // Reviews subcollection
       match /reviews/{reviewId} {
-        allow read: if true;
-        allow create: if isSignedIn() && request.auth.uid != get(/databases/$(database)/documents/services/$(serviceId)).data.userId;
-        allow update: if false; // Reviews are not editable
-        allow delete: if isOwner(resource.data.userId);
+        // Anyone can read reviews
+        read: if true;
+        // Signed in users can create reviews, but not for their own services
+        create: if isSignedIn() && get(/databases/$(database)/documents/services/$(serviceId)).data.userId != request.auth.uid;
+        // Users cannot update or delete reviews for now
+        update, delete: if false;
       }
     }
 
-    // CHATS
-    // Only participants can read/write to a chat document and its messages.
+    // Chats collection
     match /chats/{chatId} {
-        allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
-        
-        match /messages/{messageId} {
-            allow read, create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-            allow update, delete: if false; // Messages are immutable
-        }
+      // Read/Write is only allowed if the user is a participant in the chat
+      allow read, write: if isSignedIn() && request.auth.uid in resource.data.participants;
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+         // Creating a message is allowed if the user is a participant in the parent chat
+         create: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+         // Only participants can read messages
+         read: if isSignedIn() && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+         // Messages cannot be updated or deleted
+         update, delete: if false;
+      }
     }
   }
 }
