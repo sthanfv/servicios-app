@@ -83,12 +83,12 @@ function UserMenu() {
         </DropdownMenu>
     ) : (
       <div className="flex items-center gap-2">
-        <Button variant="ghost" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
-           {theme === 'dark' ? <Sun /> : <Moon />}
+        <Button variant="ghost" size="icon" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+           {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
            <span className="sr-only">Toggle Theme</span>
         </Button>
         <Button onClick={() => router.push('/login')}>
-            <LogIn className="mr-2" />
+            <LogIn className="mr-2 h-4 w-4"/>
             Iniciar Sesión
         </Button>
       </div>
