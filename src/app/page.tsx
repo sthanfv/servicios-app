@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { db, auth } from "@/services/firebase";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, limit, startAfter, getDocs } from "firebase/firestore";
+import type { QueryDocumentSnapshot, DocumentData } from "firebase/firestore";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,19 +113,26 @@ function UserMenu() {
     );
 }
 
+const SERVICES_PER_PAGE = 8;
+
 export default function Home() {
   const [allServices, setAllServices] = useState<Service[]>([]);
   const [filteredServices, setFilteredServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+
   const [categories, setCategories] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  useEffect(() => {
+  const fetchServices = () => {
     setLoading(true);
-    const q = query(collection(db, "services"), orderBy("createdAt", "desc"));
+    const q = query(collection(db, "services"), orderBy("createdAt", "desc"), limit(SERVICES_PER_PAGE));
+    
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const servicesData = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -133,6 +141,8 @@ export default function Home() {
       
       setAllServices(servicesData);
       setFilteredServices(servicesData);
+      setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      setHasMore(servicesData.length === SERVICES_PER_PAGE);
 
       const uniqueCategories = [...new Set(servicesData.map(s => s.category))];
       setCategories(uniqueCategories);
@@ -141,6 +151,37 @@ export default function Home() {
       console.error("Error fetching services:", error);
       setLoading(false);
     });
+
+    return unsubscribe;
+  };
+  
+  const fetchMoreServices = async () => {
+    if (!lastDoc || loadingMore) return;
+    
+    setLoadingMore(true);
+    const q = query(
+      collection(db, "services"), 
+      orderBy("createdAt", "desc"), 
+      startAfter(lastDoc), 
+      limit(SERVICES_PER_PAGE)
+    );
+
+    const documentSnapshots = await getDocs(q);
+    const newServices = documentSnapshots.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    } as Service));
+
+    setAllServices(prev => [...prev, ...newServices]);
+    setFilteredServices(prev => [...prev, ...newServices]);
+    setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length-1]);
+    setHasMore(newServices.length === SERVICES_PER_PAGE);
+    setLoadingMore(false);
+  }
+
+
+  useEffect(() => {
+    const unsubscribe = fetchServices();
     return () => unsubscribe();
   }, []);
 
@@ -160,6 +201,9 @@ export default function Home() {
     }
 
     setFilteredServices(services);
+     // Note: Pagination is disabled when filters are active for simplicity.
+     // For a full implementation, filtering should be done server-side.
+    setHasMore(!debouncedSearchTerm && selectedCategory === 'all' && allServices.length % SERVICES_PER_PAGE === 0 && allServices.length > 0)
   }, [debouncedSearchTerm, selectedCategory, allServices]);
 
   return (
@@ -231,39 +275,49 @@ export default function Home() {
                 <p className="text-muted-foreground mt-2">Intenta ajustar tu búsqueda o filtros.</p>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredServices.map((service) => (
-                <Link href={`/service/${service.id}`} key={service.id} className="group">
-                  <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                    {service.imageUrl ? (
-                      <div className="relative w-full h-48">
-                        <Image
-                          src={service.imageUrl}
-                          alt={service.title}
-                          layout="fill"
-                          objectFit="cover"
-                          className="rounded-t-lg"
-                          data-ai-hint="product image"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
-                        <span className="text-muted-foreground">Sin imagen</span>
-                      </div>
-                    )}
-                    <CardHeader>
-                      <CardTitle>{service.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="flex-grow">
-                      <p className="text-muted-foreground line-clamp-3">{service.description}</p>
-                    </CardContent>
-                    <CardFooter>
-                      <Badge variant="secondary">{service.category}</Badge>
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredServices.map((service) => (
+                  <Link href={`/service/${service.id}`} key={service.id} className="group">
+                    <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
+                      {service.imageUrl ? (
+                        <div className="relative w-full h-48">
+                          <Image
+                            src={service.imageUrl}
+                            alt={service.title}
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-t-lg"
+                            data-ai-hint="product image"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
+                          <span className="text-muted-foreground">Sin imagen</span>
+                        </div>
+                      )}
+                      <CardHeader>
+                        <CardTitle>{service.title}</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex-grow">
+                        <p className="text-muted-foreground line-clamp-3">{service.description}</p>
+                      </CardContent>
+                      <CardFooter>
+                        <Badge variant="secondary">{service.category}</Badge>
+                      </CardFooter>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+              {hasMore && (
+                <div className="mt-10 text-center">
+                  <Button onClick={fetchMoreServices} disabled={loadingMore}>
+                    {loadingMore ? <Loader2 className="mr-2 animate-spin"/> : null}
+                    Cargar más
+                  </Button>
+                </div>
+              )}
+            </>
           )}
         </section>
 
