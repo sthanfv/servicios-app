@@ -91,9 +91,11 @@ function UserMenu() {
            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
            <span className="sr-only">Toggle Theme</span>
         </Button>
-        <Button onClick={() => router.push('/login')}>
-            <LogIn className="mr-2 h-4 w-4"/>
-            Iniciar Sesión
+        <Button asChild>
+            <Link href="/login">
+                <LogIn className="mr-2 h-4 w-4"/>
+                Iniciar Sesión
+            </Link>
         </Button>
       </div>
     );
@@ -150,8 +152,8 @@ export default function Home() {
   }, [debouncedSearchTerm, selectedCategory, allServices]);
 
   return (
-    <div className="flex flex-col min-h-screen">
-       <header className="container flex justify-between items-center py-4">
+    <div className="flex flex-col min-h-screen bg-background">
+       <header className="container sticky top-0 z-50 flex justify-between items-center py-4 bg-background/80 backdrop-blur-xs">
         <Link href="/" className="flex items-center gap-2">
           <Briefcase className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-bold">
@@ -269,8 +271,10 @@ export default function Home() {
           </div>
         </section>
       </main>
-      <footer className="container text-center py-6 text-muted-foreground">
-        <p>&copy; {new Date().getFullYear()} ServiciosApp Lite. Todos los derechos reservados.</p>
+      <footer className="w-full border-t border-border/50 bg-card">
+        <div className="container text-center py-6 text-muted-foreground">
+          <p>&copy; {new Date().getFullYear()} ServiciosApp Lite. Todos los derechos reservados.</p>
+        </div>
       </footer>
     </div>
   );
