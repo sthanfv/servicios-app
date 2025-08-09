@@ -1,6 +1,6 @@
 'use client';
 import { useState } from "react";
-import { db } from "@/services/firebase";
+import { db, auth } from "@/services/firebase";
 import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, LogIn } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image';
+import { useAuthState } from "react-firebase-hooks/auth";
 
 
 export default function AddService() {
+  const [user, authLoading] = useAuthState(auth);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -42,13 +44,21 @@ export default function AddService() {
       });
       return;
     }
+    if (!user) {
+       toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Debes iniciar sesión para agregar un servicio.",
+      });
+      return;
+    }
 
     setLoading(true);
     
     let imageUrl = "";
     if (image) {
       const formData = new FormData();
-      formData.append("image", image);
+      formData.append("file", image);
       try {
         const res = await fetch("/api/upload", {
           method: "POST",
@@ -78,6 +88,7 @@ export default function AddService() {
         description,
         category,
         imageUrl,
+        userId: user.uid,
         createdAt: Timestamp.now(),
       });
       setTitle("");
@@ -89,7 +100,7 @@ export default function AddService() {
         title: "¡Éxito!",
         description: "Servicio agregado correctamente.",
       });
-      router.push('/');
+      router.push('/my-services');
     } catch (error) {
       console.error(error);
       toast({
@@ -102,19 +113,48 @@ export default function AddService() {
     }
   };
 
+  if(authLoading) {
+    return (
+        <main className="container min-h-screen flex flex-col items-center justify-center py-10">
+            <p>Cargando...</p>
+        </main>
+    )
+  }
+
+  if (!user && !authLoading) {
+    return (
+      <main className="container min-h-screen flex flex-col items-center justify-center text-center py-10">
+        <Card className="w-full max-w-md p-8">
+            <CardTitle className="text-2xl font-bold mb-4">Acceso Denegado</CardTitle>
+            <CardDescription className="mb-6">
+            Debes iniciar sesión para poder publicar un nuevo servicio.
+            </CardDescription>
+            <Button asChild>
+                <Link href="/login">
+                <LogIn className="mr-2"/>
+                Iniciar Sesión
+                </Link>
+            </Button>
+        </Card>
+      </main>
+    );
+  }
+
   return (
     <main className="container min-h-screen flex flex-col items-center justify-center py-10">
        <Card className="w-full max-w-lg">
           <CardHeader>
-            <div className="flex items-center gap-4">
-                <Button variant="outline" size="icon" asChild>
-                    <Link href="/">
-                        <ArrowLeft />
-                    </Link>
-                </Button>
-                <div>
-                    <CardTitle className="text-2xl font-bold">Agregar Servicio</CardTitle>
-                    <CardDescription>Publica un nuevo servicio para que otros lo vean.</CardDescription>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button variant="outline" size="icon" asChild>
+                        <Link href="/">
+                            <ArrowLeft />
+                        </Link>
+                    </Button>
+                    <div>
+                        <CardTitle className="text-2xl font-bold">Agregar Servicio</CardTitle>
+                        <CardDescription>Publica un nuevo servicio para que otros lo vean.</CardDescription>
+                    </div>
                 </div>
             </div>
           </CardHeader>
