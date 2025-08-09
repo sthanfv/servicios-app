@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { db } from '@/services/firebase';
 import { collection, query, where, getDocs, orderBy, Query, DocumentData } from 'firebase/firestore';
@@ -41,17 +42,17 @@ export function useServiceSearch() {
       try {
         let servicesQuery: Query<DocumentData> = collection(db, 'services');
 
-        // We build the query dynamically based on filters
-        
+        // Build the query dynamically based on filters
         if (selectedCategory !== 'all') {
           servicesQuery = query(servicesQuery, where('category', '==', selectedCategory));
         }
         
-        // Note: Firestore does not support full-text search natively.
-        // This client-side filter is a workaround. For production apps, a dedicated
-        // search service like Algolia or Typesense integrated with Firebase is recommended.
+        // Note: Firestore does not support native full-text search.
+        // This client-side filter is a common workaround for smaller-scale apps.
+        // For production apps, a dedicated search service like Algolia or Typesense
+        // integrated with Firebase is the recommended approach.
         
-        // We always order by creation date to show newest first
+        // We always order by creation date to show the newest services first
         servicesQuery = query(servicesQuery, orderBy('createdAt', 'desc'));
 
         const querySnapshot = await getDocs(servicesQuery);
@@ -60,7 +61,7 @@ export function useServiceSearch() {
           ...doc.data(),
         } as Service));
         
-        // Client-side search filtering (workaround)
+        // Client-side search filtering on the already filtered (by category) data
         if (debouncedSearchTerm) {
             const lowercasedTerm = debouncedSearchTerm.toLowerCase();
             servicesData = servicesData.filter(service => 
