@@ -60,79 +60,75 @@ export default function Login() {
 
   return (
     <main className="flex min-h-screen w-full items-center justify-center bg-background px-4">
-      <div
-        className="w-full max-w-md"
-      >
-        <Card>
-          <CardHeader className="text-center">
-            <CardTitle className="text-3xl font-bold tracking-tight">
-              Bienvenido de nuevo
-            </CardTitle>
-            <CardDescription>
-              Inicia sesión para empezar a descubrir servicios.
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleFormSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Correo electrónico</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu@correo.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Contraseña</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col gap-4">
-              <Button
-                type="submit"
-                className="w-full"
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl font-bold tracking-tight">
+            Bienvenido de nuevo
+          </CardTitle>
+          <CardDescription>
+            Inicia sesión para empezar a descubrir servicios.
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleFormSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Correo electrónico</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="tu@correo.com"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={loading}
-              >
-                {loading && !password ? 'Redirigiendo...' : loading ? 'Iniciando sesión...' : 'Entrar con correo'}
-              </Button>
-              
-              <div className="relative w-full">
-                <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    O continuar con
-                  </span>
-                </div>
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col gap-4">
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={loading}
+            >
+              {loading && !password ? 'Redirigiendo...' : loading ? 'Iniciando sesión...' : 'Entrar con correo'}
+            </Button>
+            
+            <div className="relative w-full">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
               </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card px-2 text-muted-foreground">
+                  O continuar con
+                </span>
+              </div>
+            </div>
 
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => handleLogin('google')}
-                disabled={loading}
-              >
-                <GoogleIcon className="mr-2 h-5 w-5" />
-                Google
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => handleLogin('google')}
+              disabled={loading}
+            >
+              <GoogleIcon className="mr-2 h-5 w-5" />
+              Google
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
     </main>
   );
 }
