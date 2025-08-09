@@ -63,10 +63,13 @@ export default function ChatPage() {
                 // We need to get the other user's info (name, avatar)
                 // For simplicity, we assume we have a 'users' collection with this info
                 // This part is a mock for now, but should be a fetch from a 'users' collection
+                 const userDoc = await getDoc(doc(db, 'users', otherUserId));
+                 const otherUserData = userDoc.data();
+
                 convos.push({
                     id: chatDoc.id,
-                    otherUserName: data.participantNames?.[otherUserId] ?? 'Usuario',
-                    otherUserAvatar: 'https://placehold.co/40x40.png',
+                    otherUserName: otherUserData?.displayName ?? 'Usuario',
+                    otherUserAvatar: otherUserData?.photoURL ?? `https://placehold.co/40x40.png?text=${otherUserData?.displayName?.charAt(0) ?? 'U'}`,
                     lastMessage: data.lastMessage?.text ?? 'No hay mensajes aún',
                 });
             }
@@ -88,23 +91,31 @@ export default function ChatPage() {
             const chatSnap = await getDoc(chatRef);
             
             let convo: Conversation;
+            
+            const otherUserDoc = await getDoc(doc(db, 'users', contactId));
+            const otherUserData = otherUserDoc.data();
+            const otherUserName = otherUserData?.displayName ?? 'Nuevo Contacto';
+            const otherUserAvatar = otherUserData?.photoURL ?? `https://placehold.co/40x40.png?text=${otherUserName.charAt(0)}`;
+
 
             if (chatSnap.exists()) {
                  const data = chatSnap.data();
                  convo = {
                     id: chatId,
-                    otherUserName: data.participantNames?.[contactId] ?? 'Usuario',
-                    otherUserAvatar: 'https://placehold.co/40x40.png',
+                    otherUserName: data.participantNames?.[contactId] ?? otherUserName,
+                    otherUserAvatar: otherUserAvatar,
                     lastMessage: data.lastMessage?.text ?? 'Inicia la conversación',
                 };
             } else {
                 // Create a new chat placeholder if it doesn't exist
-                // Ideally, fetch user names from a 'users' collection
+                const currentUserDoc = await getDoc(doc(db, 'users', user.uid));
+                const currentUserData = currentUserDoc.data();
+
                 const newChatData = {
                     participants: [user.uid, contactId],
                     participantNames: {
-                        [user.uid]: user.displayName ?? 'Yo',
-                        [contactId]: 'Nuevo Contacto' // This should be fetched
+                        [user.uid]: currentUserData?.displayName ?? 'Yo',
+                        [contactId]: otherUserName,
                     },
                     createdAt: Timestamp.now(),
                     lastMessage: null,
@@ -112,8 +123,8 @@ export default function ChatPage() {
                 await setDoc(chatRef, newChatData);
                  convo = {
                     id: chatId,
-                    otherUserName: 'Nuevo Contacto',
-                    otherUserAvatar: 'https://placehold.co/40x40.png',
+                    otherUserName: otherUserName,
+                    otherUserAvatar: otherUserAvatar,
                     lastMessage: 'Inicia la conversación',
                 };
             }
@@ -230,9 +241,9 @@ export default function ChatPage() {
                             </div>
                         </div>
                     ))}
-                    {conversations.length === 0 && (
+                    {conversations.length === 0 && !loading && (
                         <div className='text-center p-8 text-muted-foreground'>
-                            No tienes conversaciones activas.
+                            No tienes conversaciones activas. Inicia una desde la página de un servicio.
                         </div>
                     )}
                 </ScrollArea>
@@ -266,6 +277,11 @@ export default function ChatPage() {
                                             </div>
                                         </div>
                                     ))}
+                                     {messages.length === 0 && (
+                                        <div className="text-center text-muted-foreground p-8">
+                                            Inicia la conversación.
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </ScrollArea>
@@ -290,7 +306,7 @@ export default function ChatPage() {
                             <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-2 text-lg font-medium">Selecciona una conversación</h3>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                Elige un chat de la lista para ver los mensajes.
+                                Elige un chat de la lista para ver los mensajes o inicia uno nuevo.
                             </p>
                         </div>
                     </div>

@@ -341,7 +341,7 @@ export default function ServiceDetail() {
                             </Avatar>
                             <div>
                                 <p className='font-semibold'>{provider.displayName}</p>
-                                <p className='text-sm text-muted-foreground'>Proveedor verificado</p>
+                                <p className='text-sm text-muted-foreground'>Proveedor</p>
                             </div>
                         </div>
                      )}
