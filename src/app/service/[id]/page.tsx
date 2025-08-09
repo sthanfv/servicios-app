@@ -163,10 +163,12 @@ export default function ServiceDetail() {
         });
         toast({ title: '¡Compartido!', description: 'El enlace al servicio ha sido compartido.' });
       } catch (error) {
+        // Fallback to clipboard if share API fails (e.g., permission denied)
         console.error('Error al compartir, recurriendo a copiar:', error);
         copyToClipboard();
       }
     } else {
+      // Fallback for browsers that do not support the share API
       copyToClipboard();
     }
   };
