@@ -16,20 +16,24 @@ export default function AdminLayout({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && userData?.role !== 'admin') {
+    // Solo redirigir si la carga ha terminado y el usuario no es admin
+    if (!loading && (!userData || userData.role !== 'admin')) {
       router.replace('/');
     }
   }, [userData, loading, router]);
 
 
-  if (loading || userData?.role !== 'admin') {
+  // Muestra el loader mientras se verifica el rol
+  if (loading || !userData || userData.role !== 'admin') {
     return (
       <div className="flex h-screen w-full items-center justify-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="ml-4">Verificando acceso...</p>
       </div>
     );
   }
-
+  
+  // Si el usuario es admin, muestra el layout
   return (
     <SidebarProvider>
         <Sidebar>
