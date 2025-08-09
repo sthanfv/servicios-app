@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare, Megaphone, Users, MapPin } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useUserData } from "@/hooks/use-user-data";
@@ -117,12 +117,12 @@ export default function Home() {
 
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="container text-center py-16 md:py-24">
+        <section className="container text-center py-20 md:py-32">
             <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 text-primary">
-                Encuentra y publica servicios locales con facilidad
+                La forma simple de conectar servicios
             </h1>
             <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
-                Tu plataforma minimalista para conectar con profesionales y clientes en tu área. Rápido, seguro y directo.
+                Publica, descubre y conecta con profesionales en tu área. Rápido, seguro y sin complicaciones.
             </p>
             <div className="flex justify-center gap-4">
                 <Button size="lg" asChild>
@@ -134,8 +134,41 @@ export default function Home() {
             </div>
         </section>
 
+        {/* Benefits Section */}
+        <section className="bg-muted py-16">
+            <div className="container grid md:grid-cols-3 gap-8 text-center">
+                <div className="flex flex-col items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                        <Megaphone className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold">Publica Fácilmente</h3>
+                    <p className="text-muted-foreground">Crea una publicación para tu servicio en menos de 5 minutos y llega a nuevos clientes.</p>
+                </div>
+                 <div className="flex flex-col items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                        <Users className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold">Conecta Directo</h3>
+                    <p className="text-muted-foreground">Comunícate directamente con los proveedores o clientes a través de nuestro chat integrado.</p>
+                </div>
+                 <div className="flex flex-col items-center gap-4">
+                    <div className="bg-primary/10 p-3 rounded-full">
+                        <MapPin className="h-8 w-8 text-primary" />
+                    </div>
+                    <h3 className="text-xl font-bold">Explora Local</h3>
+                    <p className="text-muted-foreground">Encuentra los mejores profesionales y servicios disponibles cerca de ti.</p>
+                </div>
+            </div>
+        </section>
+
         {/* Services Section */}
-        <section id="services-section" className="container py-10">
+        <section id="services-section" className="container py-16">
+             <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold">Descubre Servicios</h2>
+                <p className="text-muted-foreground max-w-xl mx-auto mt-2">
+                    Usa nuestro buscador para encontrar exactamente lo que necesitas.
+                </p>
+            </div>
             <ServiceSearch />
         </section>
 
@@ -146,11 +179,13 @@ export default function Home() {
               ¿Listo para empezar?
             </h2>
             <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-              Publica tu servicio en minutos y llega a miles de clientes potenciales o encuentra al profesional perfecto para lo que necesitas.
+              Únete a nuestra comunidad hoy mismo. Es gratis y solo toma un minuto.
             </p>
-            <Button size="lg" asChild className="w-full sm:w-auto">
-              <Link href="/add">Publicar un Servicio Ahora</Link>
-            </Button>
+            <div className="flex justify-center gap-4">
+                <Button size="lg" asChild className="w-full sm:w-auto">
+                    <Link href="/signup">Crear una cuenta</Link>
+                </Button>
+            </div>
           </div>
         </section>
       </main>
