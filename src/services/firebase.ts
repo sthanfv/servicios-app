@@ -3,13 +3,14 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  "projectId": "serviciosapp-lite",
-  "appId": "1:326287510871:web:80825bd1210a6977234212",
-  "storageBucket": "serviciosapp-lite.firebasestorage.app",
-  "apiKey": "AIzaSyBQmnOqzboypU6o5vQUmNFnujo37o3XFo8",
-  "authDomain": "serviciosapp-lite.firebaseapp.com",
-  "messagingSenderId": "326287510871"
+  apiKey: "AIzaSyChPS_1_hJd-dZ0dDBIqjBw1P4xS3iT0mM",
+  authDomain: "serviciosapp-lite.firebaseapp.com",
+  projectId: "serviciosapp-lite",
+  storageBucket: "serviciosapp-lite.appspot.com",
+  messagingSenderId: "326287510871",
+  appId: "1:326287510871:web:80825bd1210a6977234212"
 };
+
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
