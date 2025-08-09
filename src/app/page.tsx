@@ -140,12 +140,13 @@ export default function Home() {
       } as Service));
       
       setAllServices(servicesData);
-      setFilteredServices(servicesData);
+      
+      const uniqueCategories = [...new Set(servicesData.map(s => s.category))];
+      setCategories(uniqueCategories);
+      
       setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
       setHasMore(servicesData.length === SERVICES_PER_PAGE);
 
-      const uniqueCategories = [...new Set(servicesData.map(s => s.category))];
-      setCategories(uniqueCategories);
       setLoading(false);
     }, (error) => {
       console.error("Error fetching services:", error);
@@ -156,7 +157,7 @@ export default function Home() {
   };
   
   const fetchMoreServices = async () => {
-    if (!lastDoc || loadingMore) return;
+    if (!lastDoc || loadingMore || !hasMore) return;
     
     setLoadingMore(true);
     const q = query(
@@ -166,17 +167,23 @@ export default function Home() {
       limit(SERVICES_PER_PAGE)
     );
 
-    const documentSnapshots = await getDocs(q);
-    const newServices = documentSnapshots.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    } as Service));
+    try {
+        const documentSnapshots = await getDocs(q);
+        const newServices = documentSnapshots.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+        } as Service));
 
-    setAllServices(prev => [...prev, ...newServices]);
-    setFilteredServices(prev => [...prev, ...newServices]);
-    setLastDoc(documentSnapshots.docs[documentSnapshots.docs.length-1]);
-    setHasMore(newServices.length === SERVICES_PER_PAGE);
-    setLoadingMore(false);
+        setAllServices(prev => [...prev, ...newServices]);
+        const newLastDoc = documentSnapshots.docs[documentSnapshots.docs.length-1];
+        setLastDoc(newLastDoc);
+        setHasMore(newServices.length === SERVICES_PER_PAGE);
+    } catch (error) {
+        console.error("Error fetching more services:", error);
+        setHasMore(false);
+    } finally {
+        setLoadingMore(false);
+    }
   }
 
 
@@ -188,6 +195,7 @@ export default function Home() {
   useEffect(() => {
     let services = [...allServices];
 
+    // Apply search filter
     if (debouncedSearchTerm) {
       const lowercasedTerm = debouncedSearchTerm.toLowerCase();
       services = services.filter(service => 
@@ -196,14 +204,21 @@ export default function Home() {
       );
     }
 
+    // Apply category filter
     if (selectedCategory && selectedCategory !== 'all') {
       services = services.filter(service => service.category === selectedCategory);
     }
 
     setFilteredServices(services);
-     // Note: Pagination is disabled when filters are active for simplicity.
-     // For a full implementation, filtering should be done server-side.
-    setHasMore(!debouncedSearchTerm && selectedCategory === 'all' && allServices.length % SERVICES_PER_PAGE === 0 && allServices.length > 0)
+     
+    // Disable "load more" when filtering is active
+    const isFiltering = debouncedSearchTerm !== '' || selectedCategory !== 'all';
+    if(isFiltering){
+        setHasMore(false)
+    } else {
+        setHasMore(allServices.length > 0 && allServices.length % SERVICES_PER_PAGE === 0)
+    }
+
   }, [debouncedSearchTerm, selectedCategory, allServices]);
 
   return (
@@ -288,7 +303,7 @@ export default function Home() {
                             layout="fill"
                             objectFit="cover"
                             className="rounded-t-lg"
-                            data-ai-hint="product image"
+                            data-ai-hint="service image"
                           />
                         </div>
                       ) : (
