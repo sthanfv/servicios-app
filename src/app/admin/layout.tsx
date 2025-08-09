@@ -1,13 +1,35 @@
+
 'use client';
 import { SidebarProvider, Sidebar, SidebarTrigger, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarInset } from "@/components/ui/sidebar";
-import { Home, Users, Settings } from "lucide-react";
+import { Home, Users, Settings, Loader2 } from "lucide-react";
 import Link from 'next/link';
+import { useUserData } from "@/hooks/use-user-data";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const { userData, loading } = useUserData();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!loading && userData?.role !== 'admin') {
+      router.replace('/');
+    }
+  }, [userData, loading, router]);
+
+
+  if (loading || userData?.role !== 'admin') {
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <SidebarProvider>
         <Sidebar>

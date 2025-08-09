@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -10,12 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare, Briefcase } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare, Briefcase, Shield } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useDebounce } from "@/hooks/use-debounce";
+import { useUserData } from "@/hooks/use-user-data";
 
 
 interface Service {
@@ -28,7 +30,8 @@ interface Service {
 }
 
 function UserMenu() {
-    const [user, loading] = useAuthState(auth);
+    const { user, userData, loading: userDataLoading } = useUserData();
+    const [authLoading] = useAuthState(auth);
     const { theme, setTheme } = useTheme();
     const router = useRouter();
 
@@ -36,10 +39,12 @@ function UserMenu() {
         await auth.signOut();
         router.push('/');
     };
+    
+    const loading = authLoading || userDataLoading;
 
     if (loading) return <div className="w-8 h-8 rounded-full bg-muted animate-pulse" />;
     
-    if (user) {
+    if (user && userData) {
         return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -53,8 +58,8 @@ function UserMenu() {
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuItem disabled>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.displayName}</p>
-                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                    <p className="text-sm font-medium leading-none">{userData.displayName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{userData.email}</p>
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -70,6 +75,12 @@ function UserMenu() {
                     <MessageSquare className="mr-2 h-4 w-4" />
                     <span>Mis Chats</span>
                 </DropdownMenuItem>
+                {userData.role === 'admin' && (
+                    <DropdownMenuItem onSelect={() => router.push('/admin')}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Admin Panel</span>
+                    </DropdownMenuItem>
+                )}
                  <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
                   {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
