@@ -4,8 +4,22 @@ import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const metadata: Metadata = {
-  title: 'ServiciosApp Lite',
+  title: {
+    template: '%s | ServiciosApp Lite',
+    default: 'ServiciosApp Lite - Tu plataforma para encontrar y ofrecer servicios locales',
+  },
   description: 'Tu plataforma minimalista para encontrar y ofrecer servicios locales.',
+  openGraph: {
+    title: 'ServiciosApp Lite',
+    description: 'Tu plataforma minimalista para encontrar y ofrecer servicios locales.',
+    images: ['/og-image.png'] // Asegúrate de tener una imagen de vista previa en public/og-image.png
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ServiciosApp Lite',
+    description: 'Tu plataforma minimalista para encontrar y ofrecer servicios locales.',
+    images: ['/og-image.png'] // Asegúrate de tener una imagen de vista previa en public/og-image.png
+  }
 };
 
 export default function RootLayout({

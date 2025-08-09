@@ -14,6 +14,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import type { Metadata } from 'next';
 
 interface Service {
   title: string;
@@ -38,6 +39,36 @@ interface Review {
     createdAt: Timestamp;
 }
 
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const serviceId = params.id;
+  const serviceDocRef = doc(db, 'services', serviceId);
+  const serviceDocSnap = await getDoc(serviceDocRef);
+
+  if (!serviceDocSnap.exists()) {
+    return {
+      title: 'Servicio no encontrado',
+      description: 'El servicio que buscas no existe o fue eliminado.',
+    };
+  }
+
+  const service = serviceDocSnap.data() as Service;
+
+  return {
+    title: service.title,
+    description: service.description.substring(0, 160),
+    openGraph: {
+        title: service.title,
+        description: service.description.substring(0, 160),
+        images: service.imageUrl ? [service.imageUrl] : [],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: service.title,
+        description: service.description.substring(0, 160),
+        images: service.imageUrl ? [service.imageUrl] : [],
+    }
+  };
+}
 
 export default function ServiceDetail() {
   const params = useParams();
