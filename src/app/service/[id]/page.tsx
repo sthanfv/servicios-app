@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/services/firebase';
+import { db, auth } from '@/services/firebase';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, Share2 } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageSquare, Share2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 interface Service {
   title: string;
@@ -25,6 +26,7 @@ export default function ServiceDetail() {
   const { toast } = useToast();
   const serviceId = params.id as string;
 
+  const [user, authLoading] = useAuthState(auth);
   const [service, setService] = useState<Service | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -77,8 +79,23 @@ export default function ServiceDetail() {
     }
   };
 
+  const handleContact = () => {
+    if (!user) {
+        toast({
+            variant: 'destructive',
+            title: 'Acción requerida',
+            description: 'Debes iniciar sesión para contactar al proveedor.',
+        });
+        router.push('/login');
+        return;
+    }
+    // For now, it just navigates to a general chat page
+    // In a real implementation, you'd pass the provider's ID
+    router.push(`/chat?contact=${service?.userId}`);
+  };
 
-  if (loading) {
+
+  if (loading || authLoading) {
     return (
       <main className="container min-h-screen flex items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />
@@ -89,6 +106,8 @@ export default function ServiceDetail() {
   if (!service) {
     return null; // Or a more comprehensive "Not Found" component
   }
+  
+  const isOwner = user && user.uid === service.userId;
 
   return (
     <main className="container py-10">
@@ -96,10 +115,18 @@ export default function ServiceDetail() {
         <Button variant="outline" size="icon" onClick={() => router.back()}>
           <ArrowLeft />
         </Button>
-        <Button variant="outline" onClick={handleShare}>
-            <Share2 className="mr-2" />
-            Compartir
-        </Button>
+        <div className='flex gap-2'>
+            {!isOwner && (
+                 <Button onClick={handleContact}>
+                    <MessageSquare className="mr-2" />
+                    Contactar
+                </Button>
+            )}
+            <Button variant="outline" onClick={handleShare}>
+                <Share2 className="mr-2" />
+                Compartir
+            </Button>
+        </div>
       </div>
 
       <Card className="overflow-hidden">

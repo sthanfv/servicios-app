@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2 } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2, MessageSquare } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
@@ -64,6 +64,10 @@ function UserMenu() {
              <DropdownMenuItem onSelect={() => router.push('/add')}>
               <PlusCircle className="mr-2 h-4 w-4" />
               <span>Agregar Servicio</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => router.push('/chat')}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                <span>Mis Chats</span>
             </DropdownMenuItem>
              <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
