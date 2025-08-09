@@ -1,18 +1,17 @@
 'use client';
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { db, auth } from "@/services/firebase";
-import { collection, onSnapshot, orderBy, query, where, Query, DocumentData } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,7 +56,7 @@ function UserMenu() {
                 <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
               </div>
             </DropdownMenuItem>
-            <Separator />
+            <DropdownMenuSeparator />
              <DropdownMenuItem onSelect={() => router.push('/my-services')}>
               <User className="mr-2 h-4 w-4" />
               <span>Mis Servicios</span>
@@ -66,12 +65,12 @@ function UserMenu() {
               <PlusCircle className="mr-2 h-4 w-4" />
               <span>Agregar Servicio</span>
             </DropdownMenuItem>
-             <Separator />
+             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
               {theme === 'dark' ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
               <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Oscuro'}</span>
             </DropdownMenuItem>
-            <Separator />
+            <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={handleSignOut}>
               <LogOut className="mr-2 h-4 w-4" />
               <span>Cerrar sesión</span>
@@ -190,7 +189,8 @@ export default function Home() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredServices.map((service) => (
-              <Card key={service.id} className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
+            <Link href={`/service/${service.id}`} key={service.id} className="group">
+              <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
                 {service.imageUrl ? (
                   <div className="relative w-full h-48">
                     <Image
@@ -217,6 +217,7 @@ export default function Home() {
                   <Badge variant="secondary">{service.category}</Badge>
                 </CardFooter>
               </Card>
+            </Link>
           ))}
         </div>
       )}
