@@ -129,18 +129,26 @@ export default function ServiceDetail() {
 
   }, [serviceId, currentUser])
 
-  const handleShare = () => {
-    if(navigator.share) {
-        navigator.share({
-            title: service?.title,
-            text: `Mira este servicio: ${service?.title}`,
-            url: window.location.href,
-        })
-        .then(() => toast({ title: '¡Compartido!', description: 'El enlace al servicio ha sido compartido.' }))
-        .catch((error) => console.error('Error al compartir', error));
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast({ title: '¡Copiado!', description: 'Enlace copiado al portapapeles.' });
+  };
+
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: service?.title,
+          text: `Mira este servicio: ${service?.title}`,
+          url: window.location.href,
+        });
+        toast({ title: '¡Compartido!', description: 'El enlace al servicio ha sido compartido.' });
+      } catch (error) {
+        console.error('Error al compartir, recurriendo a copiar:', error);
+        copyToClipboard();
+      }
     } else {
-        navigator.clipboard.writeText(window.location.href);
-        toast({ title: '¡Copiado!', description: 'Enlace copiado al portapapeles.' });
+      copyToClipboard();
     }
   };
 
