@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useServiceSearch, Service } from '@/hooks/use-service-search';
 import { Loader2, Search } from 'lucide-react';
 import { Button } from './ui/button';
+import { Skeleton } from './ui/skeleton';
 
 function ServiceCard({ service }: { service: Service }) {
   return (
@@ -41,6 +42,25 @@ function ServiceCard({ service }: { service: Service }) {
       </Card>
     </Link>
   );
+}
+
+function ServiceCardSkeleton() {
+    return (
+        <Card className="h-full flex flex-col overflow-hidden">
+            <Skeleton className="w-full h-48 rounded-t-lg" />
+            <CardHeader>
+                <Skeleton className="h-6 w-3/4" />
+            </CardHeader>
+            <CardContent className="flex-grow space-y-2">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+            </CardContent>
+            <CardFooter>
+                <Skeleton className="h-6 w-1/4" />
+            </CardFooter>
+        </Card>
+    );
 }
 
 
@@ -119,9 +139,10 @@ export function ServiceSearch() {
       </div>
 
       {loading ? (
-        <div className="text-center py-20">
-          <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
-          <p className="mt-4 text-muted-foreground">Buscando servicios...</p>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+                <ServiceCardSkeleton key={i} />
+            ))}
         </div>
       ) : services.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
