@@ -171,8 +171,8 @@ export default function ServiceDetail() {
           toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para dejar una reseña.' });
           return;
       }
-      if(reviewRating === 0 || !reviewComment.trim()){
-          toast({ variant: 'destructive', title: 'Error', description: 'Por favor, selecciona una calificación y escribe un comentario.' });
+      if(reviewRating === 0){
+          toast({ variant: 'destructive', title: 'Error', description: 'Por favor, selecciona una calificación.' });
           return;
       }
 
@@ -278,7 +278,7 @@ export default function ServiceDetail() {
                                 </div>
                            </div>
                            <div>
-                                <Label htmlFor="comment">Tu comentario:</Label>
+                                <Label htmlFor="comment">Tu comentario (opcional):</Label>
                                 <Textarea 
                                     id="comment" 
                                     value={reviewComment}
