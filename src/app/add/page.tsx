@@ -9,17 +9,28 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Upload } from "lucide-react";
 import Link from "next/link";
+import Image from 'next/image';
 
 
 export default function AddService() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImage(file);
+      setPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,16 +44,47 @@ export default function AddService() {
     }
 
     setLoading(true);
+    
+    let imageUrl = "";
+    if (image) {
+      const formData = new FormData();
+      formData.append("image", image);
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+           throw new Error('Image upload failed');
+        }
+        const data = await res.json();
+        imageUrl = data.url;
+      } catch(uploadError) {
+         console.error(uploadError);
+         toast({
+            variant: "destructive",
+            title: "Error de carga",
+            description: "No se pudo subir la imagen.",
+          });
+         setLoading(false);
+         return;
+      }
+    }
+
+
     try {
       await addDoc(collection(db, "services"), {
         title,
         description,
         category,
+        imageUrl,
         createdAt: Timestamp.now(),
       });
       setTitle("");
       setDescription("");
       setCategory("");
+      setImage(null);
+      setPreview(null);
       toast({
         title: "¡Éxito!",
         description: "Servicio agregado correctamente.",
@@ -107,6 +149,26 @@ export default function AddService() {
                   onChange={(e) => setCategory(e.target.value)}
                   disabled={loading}
                 />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="image">Imagen del Servicio</Label>
+                <div className="flex items-center gap-4">
+                    <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground relative">
+                        {preview ? (
+                            <Image src={preview} alt="Preview" layout="fill" objectFit="cover" className="rounded-lg"/>
+                        ) : (
+                            <Upload />
+                        )}
+                    </div>
+                    <Input
+                      id="image"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="flex-1"
+                      disabled={loading}
+                    />
+                </div>
               </div>
             </CardContent>
             <CardFooter>

@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { db } from "@/services/firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { motion } from "framer-motion";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ interface Service {
   title: string;
   description: string;
   category: string;
+  imageUrl?: string;
 }
 
 export default function Home() {
@@ -49,13 +50,19 @@ export default function Home() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {services.map((service, index) => (
-            <motion.div
-              key={service.id}
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <Card className="h-full flex flex-col">
+              <Card key={service.id} className="h-full flex flex-col">
+                {service.imageUrl && (
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={service.imageUrl}
+                      alt={service.title}
+                      layout="fill"
+                      objectFit="cover"
+                      className="rounded-t-lg"
+                      data-ai-hint="product image"
+                    />
+                  </div>
+                )}
                 <CardHeader>
                   <CardTitle>{service.title}</CardTitle>
                 </CardHeader>
@@ -66,7 +73,6 @@ export default function Home() {
                   <Badge variant="secondary">{service.category}</Badge>
                 </CardFooter>
               </Card>
-            </motion.div>
           ))}
         </div>
       )}
