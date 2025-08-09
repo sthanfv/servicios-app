@@ -1,15 +1,18 @@
 'use client';
 import Link from "next/link";
+import Image from "next/image";
 import { auth } from "@/services/firebase";
 import { Button } from "@/components/ui/button";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare, Megaphone, Users, MapPin } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare, Megaphone, Users, MapPin, Star } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useUserData } from "@/hooks/use-user-data";
 import { ServiceSearch } from "@/components/service-search";
+import { Card, CardContent } from "@/components/ui/card";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 
 
 function UserMenu() {
@@ -101,6 +104,30 @@ function UserMenu() {
 
 export default function Home() {
 
+  const testimonials = [
+    {
+      quote: "¡Increíble! Encontré un fontanero en 15 minutos. La app es súper intuitiva y fácil de usar. Totalmente recomendada para cualquier emergencia.",
+      name: "Ana García",
+      title: "Cliente Satisfecha",
+      imgSrc: "https://placehold.co/100x100.png",
+      imgHint: "woman smiling"
+    },
+    {
+      quote: "Como profesional independiente, esta plataforma me ha ayudado a conseguir nuevos clientes cada semana. La visibilidad que me da es genial.",
+      name: "Carlos Rodríguez",
+      title: "Electricista",
+      imgSrc: "https://placehold.co/100x100.png",
+      imgHint: "man portrait"
+    },
+    {
+      quote: "La mejor parte es la comunicación directa. Pude chatear con el proveedor para aclarar todas mis dudas antes de contratar el servicio. ¡5 estrellas!",
+      name: "Laura Martínez",
+      title: "Diseñadora de Interiores",
+      imgSrc: "https://placehold.co/100x100.png",
+      imgHint: "woman portrait"
+    },
+  ];
+
   return (
     <div className="flex flex-col min-h-screen bg-background">
        <header className="container sticky top-0 z-50 flex justify-between items-center py-4 bg-background/80 backdrop-blur-xs">
@@ -170,6 +197,54 @@ export default function Home() {
                 </p>
             </div>
             <ServiceSearch />
+        </section>
+
+        {/* Testimonials Section */}
+        <section className="bg-muted py-16">
+          <div className="container">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold">Lo que dicen nuestros usuarios</h2>
+              <p className="text-muted-foreground max-w-xl mx-auto mt-2">
+                Experiencias reales de personas que confían en nosotros.
+              </p>
+            </div>
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full max-w-4xl mx-auto"
+            >
+              <CarouselContent>
+                {testimonials.map((testimonial, index) => (
+                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
+                    <div className="p-1 h-full">
+                      <Card className="h-full">
+                        <CardContent className="flex flex-col items-center justify-center text-center p-6 h-full">
+                          <Image
+                            className="rounded-full mb-4"
+                            src={testimonial.imgSrc}
+                            alt={testimonial.name}
+                            width={80}
+                            height={80}
+                            data-ai-hint={testimonial.imgHint}
+                          />
+                          <p className="text-muted-foreground italic mb-4">"{testimonial.quote}"</p>
+                          <div className="flex items-center gap-1 mb-2">
+                            {[...Array(5)].map((_, i) => <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />)}
+                          </div>
+                          <p className="font-bold">{testimonial.name}</p>
+                          <p className="text-sm text-muted-foreground">{testimonial.title}</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
         </section>
 
         {/* CTA Section */}
