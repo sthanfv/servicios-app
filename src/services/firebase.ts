@@ -3,12 +3,12 @@ import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "TU_API_KEY",
-  authDomain: "TU_AUTH_DOMAIN",
-  projectId: "TU_PROJECT_ID",
-  storageBucket: "TU_STORAGE_BUCKET",
-  messagingSenderId: "TU_MESSAGING_SENDER_ID",
-  appId: "TU_APP_ID"
+  "projectId": "serviciosapp-lite",
+  "appId": "1:326287510871:web:80825bd1210a6977234212",
+  "storageBucket": "serviciosapp-lite.firebasestorage.app",
+  "apiKey": "AIzaSyBQmnOqzboypU6o5vQUmNFnujo37o3XFo8",
+  "authDomain": "serviciosapp-lite.firebaseapp.com",
+  "messagingSenderId": "326287510871"
 };
 
 // Initialize Firebase
