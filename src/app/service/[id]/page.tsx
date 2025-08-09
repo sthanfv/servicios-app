@@ -41,33 +41,45 @@ interface Review {
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const serviceId = params.id;
-  const serviceDocRef = doc(db, 'services', serviceId);
-  const serviceDocSnap = await getDoc(serviceDocRef);
+  try {
+    const serviceDocRef = doc(db, 'services', serviceId);
+    const serviceDocSnap = await getDoc(serviceDocRef);
 
-  if (!serviceDocSnap.exists()) {
-    return {
-      title: 'Servicio no encontrado',
-      description: 'El servicio que buscas no existe o fue eliminado.',
-    };
-  }
-
-  const service = serviceDocSnap.data() as Service;
-
-  return {
-    title: service.title,
-    description: service.description.substring(0, 160),
-    openGraph: {
-        title: service.title,
-        description: service.description.substring(0, 160),
-        images: service.imageUrl ? [service.imageUrl] : [],
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: service.title,
-        description: service.description.substring(0, 160),
-        images: service.imageUrl ? [service.imageUrl] : [],
+    if (!serviceDocSnap.exists()) {
+      return {
+        title: 'Servicio no encontrado',
+        description: 'El servicio que buscas no existe o fue eliminado.',
+      };
     }
-  };
+
+    const service = serviceDocSnap.data() as Service;
+
+    const pageTitle = `${service.title} | ServiciosApp Lite`;
+    const pageDescription = service.description.substring(0, 155);
+
+    return {
+      title: pageTitle,
+      description: pageDescription,
+      openGraph: {
+          title: pageTitle,
+          description: pageDescription,
+          images: service.imageUrl ? [service.imageUrl] : ['/og-image.png'],
+          type: 'article',
+      },
+      twitter: {
+          card: 'summary_large_image',
+          title: pageTitle,
+          description: pageDescription,
+          images: service.imageUrl ? [service.imageUrl] : ['/og-image.png'],
+      }
+    };
+  } catch (error) {
+     console.error("Error generating metadata:", error);
+     return {
+        title: "Error",
+        description: "No se pudo cargar la información para esta página."
+     }
+  }
 }
 
 export default function ServiceDetail() {

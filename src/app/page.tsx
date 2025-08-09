@@ -215,9 +215,9 @@ export default function Home() {
             ServiciosApp Lite
           </h1>
         </Link>
-        <div className="flex items-center gap-4">
+        <nav className="flex items-center gap-4">
             <UserMenu />
-        </div>
+        </nav>
       </header>
 
       <main className="flex-grow">
