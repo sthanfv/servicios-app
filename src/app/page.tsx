@@ -1,8 +1,8 @@
 'use client';
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { db, auth } from "@/services/firebase";
-import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
+import { collection, onSnapshot, orderBy, query, where, Query, DocumentData } from "firebase/firestore";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +10,14 @@ import { Badge } from "@/components/ui/badge";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Search, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Separator } from "@/components/ui/separator";
 import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useDebounce } from "@/hooks/use-debounce";
+
 
 interface Service {
   id: string;
@@ -75,48 +79,117 @@ function UserMenu() {
           </DropdownMenuContent>
         </DropdownMenu>
     ) : (
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}>
+           {theme === 'dark' ? <Sun /> : <Moon />}
+           <span className="sr-only">Toggle Theme</span>
+        </Button>
         <Button asChild>
             <Link href="/login">
                 <LogIn className="mr-2" />
                 Iniciar Sesión
             </Link>
         </Button>
+      </div>
     );
 }
 
 export default function Home() {
-  const [services, setServices] = useState<Service[]>([]);
+  const [allServices, setAllServices] = useState<Service[]>([]);
+  const [filteredServices, setFilteredServices] = useState<Service[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
+    setLoading(true);
     const q = query(collection(db, "services"), orderBy("createdAt", "desc"));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const servicesData = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       } as Service));
-      setServices(servicesData);
+      
+      setAllServices(servicesData);
+
+      const uniqueCategories = [...new Set(servicesData.map(s => s.category))];
+      setCategories(uniqueCategories);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching services:", error);
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);
+
+  useEffect(() => {
+    let services = allServices;
+
+    if (debouncedSearchTerm) {
+      const lowercasedTerm = debouncedSearchTerm.toLowerCase();
+      services = services.filter(service => 
+        service.title.toLowerCase().includes(lowercasedTerm) ||
+        service.description.toLowerCase().includes(lowercasedTerm)
+      );
+    }
+
+    if (selectedCategory && selectedCategory !== 'all') {
+      services = services.filter(service => service.category === selectedCategory);
+    }
+
+    setFilteredServices(services);
+  }, [debouncedSearchTerm, selectedCategory, allServices]);
 
   return (
     <div className="container py-10">
        <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-primary">
-          Servicios Populares
+          Encuentra Servicios
         </h1>
         <div className="flex items-center gap-4">
             <UserMenu />
         </div>
       </header>
+
+      <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+            placeholder="Buscar por título o descripción..."
+            className="pl-10"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+            <SelectTrigger className="w-full md:w-[200px]">
+                <SelectValue placeholder="Categorías" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">Todas las categorías</SelectItem>
+                {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
+      </div>
       
-      {services.length === 0 ? (
-         <div className="text-center py-20">
-            <p className="text-muted-foreground">No hay servicios disponibles en este momento.</p>
+      {loading ? (
+        <div className="text-center py-20">
+             <Loader2 className="mx-auto h-12 w-12 animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Cargando servicios...</p>
+        </div>
+      ) : filteredServices.length === 0 ? (
+         <div className="text-center py-20 border-2 border-dashed rounded-lg">
+            <h3 className="text-xl font-semibold">No se encontraron servicios</h3>
+            <p className="text-muted-foreground mt-2">Intenta ajustar tu búsqueda o filtros.</p>
         </div>
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {services.map((service) => (
+          {filteredServices.map((service) => (
               <Card key={service.id} className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 hover:scale-105 hover:shadow-xl">
                 {service.imageUrl ? (
                   <div className="relative w-full h-48">

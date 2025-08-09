@@ -11,6 +11,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, Edit, Trash2, PlusCircle, LogIn, Loader2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Badge } from '@/components/ui/badge';
 
 interface Service {
   id: string;
@@ -84,10 +85,10 @@ export default function MyServices() {
     }
   };
 
-  if (authLoading || (!user && !authLoading)) {
+  if (authLoading || (!user && !authLoading && !loadingServices)) {
     return (
         <main className="container min-h-screen flex flex-col items-center justify-center text-center py-10">
-        {authLoading ? <p>Cargando...</p> : (
+        {authLoading ? <Loader2 className="h-12 w-12 animate-spin text-primary"/> : (
             <Card className="w-full max-w-md p-8">
                 <CardTitle className="text-2xl font-bold mb-4">Acceso Denegado</CardTitle>
                 <CardDescription className="mb-6">
