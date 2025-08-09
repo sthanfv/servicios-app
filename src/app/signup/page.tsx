@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from "react";
-import { auth } from "@/services/firebase";
+import { auth, db } from "@/services/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,10 +26,20 @@ export default function SignUp() {
     setLoading(true);
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
       
-      if(userCredential.user) {
-        await updateProfile(userCredential.user, {
+      if(user) {
+        await updateProfile(user, {
             displayName: displayName
+        });
+
+        // Add user to 'users' collection in Firestore
+        await setDoc(doc(db, "users", user.uid), {
+          uid: user.uid,
+          displayName: displayName,
+          email: user.email,
+          createdAt: Timestamp.now(),
+          role: 'user' // Default role
         });
       }
 
