@@ -87,11 +87,9 @@ function UserMenu() {
            {theme === 'dark' ? <Sun /> : <Moon />}
            <span className="sr-only">Toggle Theme</span>
         </Button>
-        <Button asChild>
-            <Link href="/login">
-                <LogIn className="mr-2" />
-                Iniciar Sesión
-            </Link>
+        <Button onClick={() => router.push('/login')}>
+            <LogIn className="mr-2" />
+            Iniciar Sesión
         </Button>
       </div>
     );
