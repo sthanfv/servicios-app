@@ -253,6 +253,21 @@ export default function Home() {
             </div>
           )}
         </section>
+
+        {/* CTA Section */}
+        <section className="container py-16">
+          <div className="bg-card border rounded-xl p-8 md:p-12 text-center">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              ¿Listo para empezar?
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+              Publica tu servicio en minutos y llega a miles de clientes potenciales o encuentra al profesional perfecto para lo que necesitas.
+            </p>
+            <Button size="lg" asChild className="w-full sm:w-auto">
+              <Link href="/add">Publicar un Servicio Ahora</Link>
+            </Button>
+          </div>
+        </section>
       </main>
       <footer className="container text-center py-6 text-muted-foreground">
         <p>&copy; {new Date().getFullYear()} ServiciosApp Lite. Todos los derechos reservados.</p>
