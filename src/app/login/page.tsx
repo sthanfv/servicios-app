@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from "react";
-import { auth, googleProvider } from "@/services/firebase";
-import { signInWithPopup, signInWithEmailAndPassword } from "firebase/auth";
+import { auth, googleProvider, db } from "@/services/firebase";
+import { signInWithPopup, signInWithEmailAndPassword, User } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,19 +32,32 @@ export default function Login() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const handleSuccessfulLogin = async (user: User) => {
+    const userDocRef = doc(db, "users", user.uid);
+    const userDocSnap = await getDoc(userDocRef);
+    
+    toast({
+      title: "Inicio de sesión exitoso",
+      description: "¡Bienvenido de vuelta!",
+    });
+    
+    if (userDocSnap.exists() && userDocSnap.data()?.role === 'admin') {
+      router.push('/admin');
+    } else {
+      router.push('/');
+    }
+  };
+
   const handleLogin = async (provider: 'email' | 'google') => {
     setLoading(true);
     try {
+      let userCredential;
       if (provider === 'google') {
-        await signInWithPopup(auth, googleProvider);
+        userCredential = await signInWithPopup(auth, googleProvider);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "¡Bienvenido de vuelta!",
-      });
-      router.push('/'); // Redirect to home on successful login
+      await handleSuccessfulLogin(userCredential.user);
     } catch (err: any) {
       console.error(err);
       toast({
