@@ -1,4 +1,3 @@
-
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -7,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useServiceSearch, Service } from '@/hooks/use-service-search';
-import { Loader2, Search } from 'lucide-react';
+import { Loader2, Search, MapPin } from 'lucide-react';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import { motion } from 'framer-motion';
@@ -52,19 +51,27 @@ function ServiceCard({ service }: { service: Service }) {
             </div>
             )}
             <CardHeader>
-            <CardTitle>{service.title}</CardTitle>
+                <CardTitle>{service.title}</CardTitle>
+                 <div className="flex items-center text-muted-foreground text-sm gap-2 pt-1">
+                    <MapPin className="h-4 w-4" />
+                    <span>{service.city}{service.zone ? `, ${service.zone}` : ''}</span>
+                </div>
             </CardHeader>
-            <CardContent className="flex-grow">
-            <p className="text-muted-foreground line-clamp-3">{service.description}</p>
+            <CardContent className="flex-grow space-y-4">
+                <p className="text-muted-foreground line-clamp-2">{service.description}</p>
+                <div className="flex justify-between items-center">
+                    <Badge variant="secondary">{service.category}</Badge>
+                    <span className="text-lg font-bold text-primary">
+                        ${new Intl.NumberFormat('es-CO').format(service.price)}
+                    </span>
+                </div>
             </CardContent>
-            <CardFooter>
-            <Badge variant="secondary">{service.category}</Badge>
-            </CardFooter>
         </Card>
         </Link>
     </motion.div>
   );
 }
+
 
 function ServiceCardSkeleton() {
     return (
@@ -72,15 +79,16 @@ function ServiceCardSkeleton() {
             <Skeleton className="w-full h-48 rounded-t-xl" />
             <CardHeader>
                 <Skeleton className="h-6 w-3/4" />
+                <Skeleton className="h-4 w-1/2 mt-1" />
             </CardHeader>
             <CardContent className="flex-grow space-y-2">
                 <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-2/3" />
+                 <div className="flex justify-between items-center pt-2">
+                    <Skeleton className="h-6 w-1/4" />
+                    <Skeleton className="h-6 w-1/3" />
+                </div>
             </CardContent>
-            <CardFooter>
-                <Skeleton className="h-6 w-1/4" />
-            </CardFooter>
         </Card>
     );
 }

@@ -12,6 +12,9 @@ export interface Service {
   imageUrl?: string;
   userId: string;
   createdAt: any;
+  price: number;
+  city: string;
+  zone?: string;
 }
 
 export function useServiceSearch() {
