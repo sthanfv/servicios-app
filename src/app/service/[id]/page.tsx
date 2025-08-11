@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, onSnapshot, addDoc, Timestamp, orderBy } from 'firebase/firestore';
 import { db, auth } from '@/services/firebase';
@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, MessageSquare, Share2, Star, Heart, MapPin, Briefcase } from 'lucide-react';
+import { ArrowLeft, Loader2, Share2, Star, Heart, MapPin, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,6 +19,7 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { HiringModal } from '@/components/hiring-modal';
+import { Progress } from '@/components/ui/progress';
 
 interface Service {
   title: string;
@@ -164,7 +165,25 @@ export default function ServiceDetail() {
       
       return () => unsubscribe();
 
-  }, [serviceId, currentUser])
+  }, [serviceId, currentUser]);
+
+  const reviewStats = useMemo(() => {
+    if (reviews.length === 0) {
+      return {
+        average: 0,
+        total: 0,
+        distribution: [0, 0, 0, 0, 0],
+      };
+    }
+    const total = reviews.length;
+    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+    const average = parseFloat((sum / total).toFixed(1));
+    const distribution = [5, 4, 3, 2, 1].map(
+      (stars) => reviews.filter((r) => r.rating === stars).length
+    );
+    return { average, total, distribution };
+  }, [reviews]);
+
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -331,8 +350,34 @@ export default function ServiceDetail() {
             <Card>
                 <CardHeader>
                     <CardTitle>Reseñas y Calificaciones</CardTitle>
+                    {reviewStats.total > 0 && (
+                        <div className="flex items-center gap-2 pt-2">
+                            <div className="flex items-center">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star key={star} className={`h-5 w-5 ${reviewStats.average >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
+                                ))}
+                            </div>
+                            <span className="font-bold text-lg">{reviewStats.average}</span>
+                            <span className="text-muted-foreground text-sm">({reviewStats.total} reseñas)</span>
+                        </div>
+                    )}
                 </CardHeader>
                 <CardContent>
+                     {reviewStats.total > 0 && (
+                       <div className="space-y-2 mb-8">
+                           {reviewStats.distribution.map((count, index) => {
+                               const stars = 5 - index;
+                               const percentage = reviewStats.total > 0 ? (count / reviewStats.total) * 100 : 0;
+                               return (
+                                   <div key={stars} className="flex items-center gap-2 text-sm">
+                                       <span className="w-16">{stars} estrellas</span>
+                                       <Progress value={percentage} className="flex-1 h-2" />
+                                       <span className="w-8 text-right text-muted-foreground">{count}</span>
+                                   </div>
+                               );
+                           })}
+                       </div>
+                    )}
                     {canReview && (
                         <form onSubmit={handleReviewSubmit} className="mb-6 space-y-4 p-4 border rounded-lg">
                            <h4 className='font-semibold'>Deja tu opinión</h4>
@@ -358,7 +403,7 @@ export default function ServiceDetail() {
                                     disabled={isSubmittingReview}
                                 />
                            </div>
-                           <Button type="submit" disabled={isSubmittingReview}>
+                           <Button type="submit" disabled={isSubmittingReview || reviewRating === 0}>
                                {isSubmittingReview ? <Loader2 className='mr-2 animate-spin' /> : null}
                                Publicar Reseña
                            </Button>
@@ -446,3 +491,5 @@ export default function ServiceDetail() {
     </main>
   );
 }
+
+    
