@@ -13,11 +13,15 @@ import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import { ArrowLeft, Upload, Loader2, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ServiceData {
   title: string;
   description: string;
   category: string;
+  price: number;
+  city: string;
+  zone?: string;
   imageUrl: string;
   userId: string;
 }
@@ -32,6 +36,9 @@ export default function EditService() {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('');
+  const [price, setPrice] = useState('');
+  const [city, setCity] = useState('');
+  const [zone, setZone] = useState('');
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -51,9 +58,11 @@ export default function EditService() {
             setTitle(serviceData.title);
             setDescription(serviceData.description);
             setCategory(serviceData.category);
+            setPrice(serviceData.price?.toString() ?? '');
+            setCity(serviceData.city ?? '');
+            setZone(serviceData.zone ?? '');
             setPreview(serviceData.imageUrl);
         } else {
-            // If user is not the owner, they can't edit.
             toast({ variant: 'destructive', title: 'Acceso Denegado', description: 'No tienes permiso para editar este servicio.' });
             router.push('/my-services');
         }
@@ -79,8 +88,8 @@ export default function EditService() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!title || !description || !category) {
-      toast({ variant: 'destructive', title: 'Error', description: 'Por favor, completa todos los campos.' });
+    if (!title || !description || !category || !price || !city) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Por favor, completa todos los campos obligatorios.' });
       return;
     }
 
@@ -88,7 +97,6 @@ export default function EditService() {
     let newImageUrl = service?.imageUrl || '';
 
     if (image) {
-      // Delete old image if it exists
       if (service?.imageUrl) {
           try {
               await fetch('/api/upload', {
@@ -101,7 +109,6 @@ export default function EditService() {
           }
       }
 
-      // Upload new image
       const formData = new FormData();
       formData.append('file', image);
       try {
@@ -126,6 +133,9 @@ export default function EditService() {
         title,
         description,
         category,
+        price: parseFloat(price),
+        city,
+        zone,
         imageUrl: newImageUrl,
       });
       toast({ title: '¡Éxito!', description: 'Servicio actualizado correctamente.' });
@@ -166,7 +176,7 @@ export default function EditService() {
   }
 
   if (!service) {
-      return null; // or a not found component
+      return null;
   }
 
   return (
@@ -189,15 +199,65 @@ export default function EditService() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="title">Título</Label>
-              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={loading} />
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} disabled={loading} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Descripción</Label>
-              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} disabled={loading} />
+              <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} disabled={loading} required />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="category">Categoría</Label>
-              <Input id="category" value={category} onChange={(e) => setCategory(e.target.value)} disabled={loading} />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                  <Label htmlFor="category">Categoría</Label>
+                  <Select onValueChange={setCategory} value={category} required>
+                      <SelectTrigger id="category" disabled={loading}>
+                          <SelectValue placeholder="Selecciona una categoría" />
+                      </SelectTrigger>
+                      <SelectContent>
+                          <SelectItem value="Hogar">Hogar</SelectItem>
+                          <SelectItem value="Tecnologia">Tecnología</SelectItem>
+                          <SelectItem value="Transporte">Transporte</SelectItem>
+                          <SelectItem value="Belleza">Belleza</SelectItem>
+                          <SelectItem value="Educacion">Educación</SelectItem>
+                          <SelectItem value="Otro">Otro</SelectItem>
+                      </SelectContent>
+                  </Select>
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="price">Precio (COP)</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    placeholder="Ej: 50000"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    disabled={loading}
+                    required
+                    min="0"
+                  />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label htmlFor="city">Ciudad</Label>
+                    <Input
+                      id="city"
+                      placeholder="Ej: Bogotá"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      disabled={loading}
+                      required
+                    />
+                </div>
+                 <div className="space-y-2">
+                    <Label htmlFor="zone">Barrio/Zona (Opcional)</Label>
+                    <Input
+                      id="zone"
+                      placeholder="Ej: Chapinero"
+                      value={zone}
+                      onChange={(e) => setZone(e.target.value)}
+                      disabled={loading}
+                    />
+                </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="image">Imagen del Servicio</Label>

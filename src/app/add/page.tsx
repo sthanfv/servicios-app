@@ -13,6 +13,7 @@ import { ArrowLeft, Upload, LogIn, CheckCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image';
 import { useAuthState } from "react-firebase-hooks/auth";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
 export default function AddService() {
@@ -20,6 +21,9 @@ export default function AddService() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [price, setPrice] = useState("");
+  const [city, setCity] = useState("");
+  const [zone, setZone] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -64,11 +68,11 @@ export default function AddService() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!title || !description || !category) {
+    if (!title || !description || !category || !price || !city) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Por favor, completa todos los campos.",
+        description: "Por favor, completa todos los campos obligatorios.",
       });
       return;
     }
@@ -88,6 +92,9 @@ export default function AddService() {
         title,
         description,
         category,
+        price: parseFloat(price),
+        city,
+        zone,
         imageUrl: imageUrl ?? "",
         userId: user.uid,
         createdAt: Timestamp.now(),
@@ -95,6 +102,9 @@ export default function AddService() {
       setTitle("");
       setDescription("");
       setCategory("");
+      setPrice("");
+      setCity("");
+      setZone("");
       setImageUrl(null);
       setPreview(null);
       toast({
@@ -169,6 +179,7 @@ export default function AddService() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={loading}
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -179,18 +190,63 @@ export default function AddService() {
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   disabled={loading}
+                  required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="category">Categoría</Label>
-                <Input
-                  id="category"
-                  placeholder="Ej: Hogar"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="category">Categoría</Label>
+                         <Select onValueChange={setCategory} value={category} required>
+                            <SelectTrigger id="category" disabled={loading}>
+                                <SelectValue placeholder="Selecciona una categoría" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Hogar">Hogar</SelectItem>
+                                <SelectItem value="Tecnologia">Tecnología</SelectItem>
+                                <SelectItem value="Transporte">Transporte</SelectItem>
+                                <SelectItem value="Belleza">Belleza</SelectItem>
+                                <SelectItem value="Educacion">Educación</SelectItem>
+                                <SelectItem value="Otro">Otro</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="price">Precio (COP)</Label>
+                        <Input
+                          id="price"
+                          type="number"
+                          placeholder="Ej: 50000"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          disabled={loading}
+                          required
+                          min="0"
+                        />
+                    </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="city">Ciudad</Label>
+                        <Input
+                          id="city"
+                          placeholder="Ej: Bogotá"
+                          value={city}
+                          onChange={(e) => setCity(e.target.value)}
+                          disabled={loading}
+                          required
+                        />
+                    </div>
+                     <div className="space-y-2">
+                        <Label htmlFor="zone">Barrio/Zona (Opcional)</Label>
+                        <Input
+                          id="zone"
+                          placeholder="Ej: Chapinero"
+                          value={zone}
+                          onChange={(e) => setZone(e.target.value)}
+                          disabled={loading}
+                        />
+                    </div>
+                </div>
               <div className="space-y-2">
                 <Label htmlFor="image">Imagen del Servicio</Label>
                 <div className="flex items-center gap-4">
