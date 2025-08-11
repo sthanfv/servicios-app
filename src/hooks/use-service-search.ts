@@ -15,6 +15,9 @@ export interface Service {
   price: number;
   city: string;
   zone?: string;
+  providerName: string;
+  providerImage?: string;
+  providerVerified?: boolean;
 }
 
 export function useServiceSearch() {

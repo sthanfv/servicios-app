@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -9,7 +8,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, Share2, Star, Heart, MapPin, Briefcase } from 'lucide-react';
+import { ArrowLeft, Loader2, Share2, Star, Heart, MapPin, Briefcase, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +19,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { HiringModal } from '@/components/hiring-modal';
 import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 interface Service {
   title: string;
@@ -30,11 +31,13 @@ interface Service {
   zone?: string;
   imageUrl?: string;
   userId: string;
+  providerVerified?: boolean;
 }
 
 interface UserProfile {
     displayName: string;
     photoURL?: string;
+    verified?: boolean;
 }
 
 interface Review {
@@ -114,12 +117,14 @@ export default function ServiceDetail() {
                 const userData = userSnap.data();
                 setProvider({
                     displayName: userData.displayName ?? 'Proveedor',
-                    photoURL: userData.photoURL ?? ''
+                    photoURL: userData.photoURL ?? '',
+                    verified: userData.verified ?? false
                 });
             } else {
                  setProvider({
                     displayName: 'Proveedor Anónimo',
-                    photoURL: ''
+                    photoURL: '',
+                    verified: false
                  });
             }
           }
@@ -457,7 +462,21 @@ export default function ServiceDetail() {
                                     <AvatarFallback>{provider.displayName?.[0]}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className='font-semibold group-hover:underline'>{provider.displayName}</p>
+                                    <div className="flex items-center gap-1">
+                                        <p className='font-semibold group-hover:underline'>{provider.displayName}</p>
+                                        {provider.verified && (
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger>
+                                                         <ShieldCheck className="h-4 w-4 text-blue-500" />
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Proveedor Verificado</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+                                        )}
+                                    </div>
                                     <p className='text-sm text-muted-foreground'>Ver perfil</p>
                                 </div>
                              </Link>
@@ -491,5 +510,3 @@ export default function ServiceDetail() {
     </main>
   );
 }
-
-    

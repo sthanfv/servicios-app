@@ -14,10 +14,12 @@ import Link from "next/link";
 import Image from 'next/image';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useProviderData } from "@/hooks/use-provider-data";
 
 
 export default function AddService() {
   const [user, authLoading] = useAuthState(auth);
+  const { providerData, loading: providerLoading } = useProviderData();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
@@ -76,7 +78,7 @@ export default function AddService() {
       });
       return;
     }
-    if (!user) {
+    if (!user || !providerData) {
        toast({
         variant: "destructive",
         title: "Error",
@@ -97,6 +99,9 @@ export default function AddService() {
         zone,
         imageUrl: imageUrl ?? "",
         userId: user.uid,
+        providerName: providerData.displayName,
+        providerImage: providerData.photoURL,
+        providerVerified: providerData.verified || false,
         createdAt: Timestamp.now(),
       });
       setTitle("");
@@ -124,10 +129,10 @@ export default function AddService() {
     }
   };
 
-  if(authLoading) {
+  if(authLoading || providerLoading) {
     return (
         <main className="container min-h-screen flex flex-col items-center justify-center py-10">
-            <p>Cargando...</p>
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
         </main>
     )
   }

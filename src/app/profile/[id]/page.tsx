@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,9 +9,11 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, MessageSquare, Share2, User as UserIcon } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageSquare, Share2, User as UserIcon, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+
 
 interface Service {
   id: string;
@@ -28,6 +29,7 @@ interface UserProfile {
     displayName: string;
     photoURL?: string;
     email: string;
+    verified?: boolean;
 }
 
 export default function ProfilePage() {
@@ -125,7 +127,21 @@ export default function ProfilePage() {
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 text-center md:text-left">
-            <h1 className="text-3xl font-bold">{profile.displayName}</h1>
+            <div className="flex items-center justify-center md:justify-start gap-2">
+                <h1 className="text-3xl font-bold">{profile.displayName}</h1>
+                {profile.verified && (
+                    <TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <ShieldCheck className="h-7 w-7 text-blue-500" />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Proveedor Verificado</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </TooltipProvider>
+                )}
+            </div>
             <p className="text-muted-foreground">{profile.email}</p>
             {/* Placeholder for future reputation system */}
             <div className="flex justify-center md:justify-start items-center gap-2 mt-2 text-muted-foreground">

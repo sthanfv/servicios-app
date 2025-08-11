@@ -1,12 +1,14 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db } from '@/services/firebase';
-import { collection, onSnapshot, doc, deleteDoc, orderBy, query } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Trash2, Loader2 } from 'lucide-react';
+import { Trash2, Loader2, ShieldCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 
 interface User {
     id: string;
@@ -14,6 +16,7 @@ interface User {
     email: string;
     role: string;
     createdAt: any;
+    verified?: boolean;
 }
 
 export default function ManageUsers() {
@@ -40,8 +43,6 @@ export default function ManageUsers() {
     const handleDelete = async (userId: string) => {
         setIsDeleting(userId);
         try {
-            // Note: This deletes the Firestore user document, but not the Firebase Auth user.
-            // A Cloud Function would be needed to delete the Auth user record.
             await deleteDoc(doc(db, 'users', userId));
             toast({ title: 'Éxito', description: 'Documento de usuario eliminado.' });
         } catch (error) {
@@ -51,6 +52,17 @@ export default function ManageUsers() {
             setIsDeleting(null);
         }
     };
+    
+    const toggleVerification = async (userId: string, currentStatus: boolean) => {
+        const userRef = doc(db, 'users', userId);
+        try {
+            await updateDoc(userRef, { verified: !currentStatus });
+            toast({ title: 'Éxito', description: `Usuario ${!currentStatus ? 'verificado' : 'no verificado'}.` });
+        } catch (e) {
+            toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el estado de verificación.' });
+        }
+    }
+
 
     if (loading) {
         return <div className="flex justify-center items-center h-64"><Loader2 className="h-12 w-12 animate-spin" /></div>;
@@ -66,6 +78,7 @@ export default function ManageUsers() {
                             <TableHead>Nombre</TableHead>
                             <TableHead>Email</TableHead>
                             <TableHead>Rol</TableHead>
+                            <TableHead>Verificado</TableHead>
                             <TableHead>Fecha de Registro</TableHead>
                             <TableHead className="text-right">Acciones</TableHead>
                         </TableRow>
@@ -73,9 +86,25 @@ export default function ManageUsers() {
                     <TableBody>
                         {users.map((user) => (
                             <TableRow key={user.id}>
-                                <TableCell>{user.displayName}</TableCell>
+                                <TableCell>
+                                    <div className="flex items-center gap-2">
+                                        {user.displayName}
+                                        {user.verified && <ShieldCheck className="h-5 w-5 text-blue-500" />}
+                                    </div>
+                                </TableCell>
                                 <TableCell>{user.email}</TableCell>
-                                <TableCell>{user.role}</TableCell>
+                                <TableCell>
+                                    <Badge variant={user.role === 'admin' ? 'default' : 'secondary'}>
+                                        {user.role}
+                                    </Badge>
+                                </TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={user.verified}
+                                        onCheckedChange={(checked) => toggleVerification(user.id, user.verified || false)}
+                                        aria-label="Verificar usuario"
+                                     />
+                                </TableCell>
                                 <TableCell>{new Date(user.createdAt?.toDate()).toLocaleDateString()}</TableCell>
                                 <TableCell className="text-right">
                                     <AlertDialog>

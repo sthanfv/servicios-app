@@ -6,10 +6,11 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useServiceSearch, Service } from '@/hooks/use-service-search';
-import { Loader2, Search, MapPin } from 'lucide-react';
+import { Loader2, Search, MapPin, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import { motion } from 'framer-motion';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 const gridContainerVariants = {
     hidden: { opacity: 0 },
@@ -57,15 +58,30 @@ function ServiceCard({ service }: { service: Service }) {
                     <span>{service.city}{service.zone ? `, ${service.zone}` : ''}</span>
                 </div>
             </CardHeader>
-            <CardContent className="flex-grow space-y-4">
-                <p className="text-muted-foreground line-clamp-2">{service.description}</p>
-                <div className="flex justify-between items-center">
-                    <Badge variant="secondary">{service.category}</Badge>
-                    <span className="text-lg font-bold text-primary">
-                        ${new Intl.NumberFormat('es-CO').format(service.price)}
-                    </span>
+            <CardContent className="flex-grow space-y-2">
+                 <div className="flex items-center gap-2">
+                    <p className="text-sm text-muted-foreground line-clamp-1 flex-grow">{service.providerName}</p>
+                    {service.providerVerified && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger>
+                                    <ShieldCheck className="h-5 w-5 text-blue-500" />
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>Proveedor Verificado</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
                 </div>
+                <p className="text-muted-foreground line-clamp-2">{service.description}</p>
             </CardContent>
+             <CardFooter className="flex justify-between items-center">
+                <Badge variant="secondary">{service.category}</Badge>
+                <span className="text-lg font-bold text-primary">
+                    ${new Intl.NumberFormat('es-CO').format(service.price)}
+                </span>
+            </CardFooter>
         </Card>
         </Link>
     </motion.div>

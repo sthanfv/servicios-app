@@ -14,6 +14,7 @@ import Image from 'next/image';
 import { ArrowLeft, Upload, Loader2, LogIn } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { useProviderData } from '@/hooks/use-provider-data';
 
 interface ServiceData {
   title: string;
@@ -28,6 +29,7 @@ interface ServiceData {
 
 export default function EditService() {
   const [user, authLoading] = useAuthState(auth);
+  const { providerData, loading: providerLoading } = useProviderData();
   const router = useRouter();
   const params = useParams();
   const serviceId = params.id as string;
@@ -88,7 +90,7 @@ export default function EditService() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!title || !description || !category || !price || !city) {
+    if (!title || !description || !category || !price || !city || !providerData) {
       toast({ variant: 'destructive', title: 'Error', description: 'Por favor, completa todos los campos obligatorios.' });
       return;
     }
@@ -137,6 +139,10 @@ export default function EditService() {
         city,
         zone,
         imageUrl: newImageUrl,
+        // Update provider data in case it changed
+        providerName: providerData.displayName,
+        providerImage: providerData.photoURL,
+        providerVerified: providerData.verified || false,
       });
       toast({ title: '¡Éxito!', description: 'Servicio actualizado correctamente.' });
       router.push('/my-services');
@@ -148,7 +154,7 @@ export default function EditService() {
     }
   };
 
-  if (pageLoading || authLoading) {
+  if (pageLoading || authLoading || providerLoading) {
     return (
       <main className="container min-h-screen flex items-center justify-center">
         <Loader2 className="h-16 w-16 animate-spin text-primary" />

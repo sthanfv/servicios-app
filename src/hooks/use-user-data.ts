@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/services/firebase';
@@ -12,6 +11,8 @@ interface UserData {
   role: 'user' | 'admin';
   createdAt: any;
   favoriteServices?: string[];
+  verified?: boolean;
+  photoURL?: string;
 }
 
 export function useUserData() {
