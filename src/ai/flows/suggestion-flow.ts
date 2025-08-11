@@ -47,6 +47,7 @@ const suggestionFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await suggestionPrompt(input);
-    return output!;
+    // Handle cases where the model might return null, providing a safe fallback.
+    return output ?? '';
   }
 );
