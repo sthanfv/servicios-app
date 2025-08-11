@@ -21,21 +21,33 @@ export function useUserData() {
 
   useEffect(() => {
     let unsubscribe: Unsubscribe | undefined;
+    
+    // Always start with loading true when user state changes
+    setLoading(true);
+
     if (user) {
       const userRef = doc(db, 'users', user.uid);
       unsubscribe = onSnapshot(userRef, (docSnap) => {
         if (docSnap.exists()) {
           setUserData(docSnap.data() as UserData);
         } else {
+          // User is authenticated, but no document exists.
           setUserData(null);
         }
+        // Data has been fetched (or confirmed not to exist), so loading is done.
         setLoading(false);
+      }, (error) => {
+        console.error("Error fetching user data:", error);
+        setUserData(null);
+        setLoading(false); // Also stop loading on error
       });
     } else {
+      // No user is signed in.
       setUserData(null);
       setLoading(false);
     }
 
+    // Cleanup subscription on unmount
     return () => unsubscribe && unsubscribe();
   }, [user]);
 
