@@ -1,4 +1,4 @@
-# ServiciosApp Lite: Informe Detallado del Proyecto
+ # ServiciosApp Lite: Informe Detallado del Proyecto
 
 _Fecha: 24 de mayo de 2024_
 

@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useFavorites } from '@/hooks/use-favorites';
 import { motion, AnimatePresence } from 'framer-motion';
+import Link from 'next/link';
 
 interface Service {
   title: string;
@@ -380,14 +381,16 @@ export default function ServiceDetail() {
                 <CardContent>
                      {provider && (
                          <div className='flex items-center gap-4 mb-4'>
-                            <Avatar className="h-12 w-12">
-                                <AvatarImage src={provider.photoURL ?? ''} />
-                                <AvatarFallback>{provider.displayName?.[0]}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                                <p className='font-semibold'>{provider.displayName}</p>
-                                <p className='text-sm text-muted-foreground'>Proveedor</p>
-                            </div>
+                             <Link href={`/profile/${service.userId}`} className="flex items-center gap-4 group">
+                                <Avatar className="h-12 w-12">
+                                    <AvatarImage src={provider.photoURL ?? ''} />
+                                    <AvatarFallback>{provider.displayName?.[0]}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className='font-semibold group-hover:underline'>{provider.displayName}</p>
+                                    <p className='text-sm text-muted-foreground'>Ver perfil</p>
+                                </div>
+                             </Link>
                         </div>
                      )}
                      
