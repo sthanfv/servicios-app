@@ -34,22 +34,22 @@ function ServiceCard({ service }: { service: Service }) {
     <motion.div variants={gridItemVariants} className="h-full">
         <Link href={`/service/${service.id}`} className="group h-full">
         <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-            {service.imageUrl ? (
-            <div className="relative w-full h-48">
+            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-xl">
+              {service.imageUrl ? (
                 <Image
                 src={service.imageUrl}
                 alt={service.title}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-t-xl"
+                className="transition-transform duration-300 group-hover:scale-110"
                 data-ai-hint="service image"
                 />
+              ) : (
+                <div className="w-full h-full bg-muted flex items-center justify-center">
+                    <span className="text-muted-foreground">Sin imagen</span>
+                </div>
+              )}
             </div>
-            ) : (
-            <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-xl">
-                <span className="text-muted-foreground">Sin imagen</span>
-            </div>
-            )}
             <CardHeader>
                 <CardTitle>{service.title}</CardTitle>
                  <div className="flex items-center text-muted-foreground text-sm gap-2 pt-1">
@@ -76,7 +76,7 @@ function ServiceCard({ service }: { service: Service }) {
 function ServiceCardSkeleton() {
     return (
         <Card className="h-full flex flex-col overflow-hidden">
-            <Skeleton className="w-full h-48 rounded-t-xl" />
+            <Skeleton className="w-full aspect-[4/3] rounded-t-xl" />
             <CardHeader>
                 <Skeleton className="h-6 w-3/4" />
                 <Skeleton className="h-4 w-1/2 mt-1" />
@@ -98,14 +98,14 @@ function FeaturedServiceCard({ service }: { service: Service }) {
   return (
     <Card className="h-full flex flex-col overflow-hidden group border-transparent hover:border-primary transition-all duration-300 transform hover:scale-105 hover:shadow-xl bg-card">
        <Link href={`/service/${service.id}`} className="block">
-        <div className="relative w-full aspect-[4/3]">
+        <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-lg">
             {service.imageUrl ? (
             <Image
                 src={service.imageUrl}
                 alt={service.title}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-t-lg"
+                className="transition-transform duration-300 group-hover:scale-110"
                 data-ai-hint="featured service"
             />
             ) : (

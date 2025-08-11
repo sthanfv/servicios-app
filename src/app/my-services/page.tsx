@@ -230,17 +230,20 @@ export default function MyServices() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {services.map(service => (
             <Card key={service.id} className="h-full flex flex-col overflow-hidden">
-                {service.imageUrl && (
-                    <div className="relative w-full h-48">
-                        <Image
-                        src={service.imageUrl}
-                        alt={service.title}
-                        layout="fill"
-                        objectFit="cover"
-                        className="rounded-t-lg"
-                        />
+                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-xl">
+                  {service.imageUrl ? (
+                      <Image
+                      src={service.imageUrl}
+                      alt={service.title}
+                      layout="fill"
+                      objectFit="cover"
+                      />
+                  ) : (
+                     <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <span className="text-muted-foreground">Sin imagen</span>
                     </div>
-                )}
+                  )}
+                </div>
                 <CardHeader>
                     <CardTitle>{service.title}</CardTitle>
                 </CardHeader>

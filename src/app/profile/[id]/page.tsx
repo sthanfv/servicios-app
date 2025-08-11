@@ -147,21 +147,20 @@ export default function ProfilePage() {
             {services.map((service) => (
               <Link href={`/service/${service.id}`} key={service.id} className="group">
                 <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-                  {service.imageUrl ? (
-                    <div className="relative w-full h-48">
+                  <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-lg">
+                    {service.imageUrl ? (
                       <Image
                         src={service.imageUrl}
                         alt={service.title}
                         layout="fill"
                         objectFit="cover"
-                        className="rounded-t-lg"
                       />
-                    </div>
-                  ) : (
-                    <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
-                      <span className="text-muted-foreground">Sin imagen</span>
-                    </div>
-                  )}
+                    ) : (
+                      <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <span className="text-muted-foreground">Sin imagen</span>
+                      </div>
+                    )}
+                  </div>
                   <CardHeader>
                     <CardTitle>{service.title}</CardTitle>
                   </CardHeader>
