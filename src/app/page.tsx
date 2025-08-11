@@ -16,6 +16,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { useServiceSearch } from "@/hooks/use-service-search";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
+import { NotificationBell } from "@/components/notification-bell";
 
 
 function UserMenu() {
@@ -42,6 +43,8 @@ function UserMenu() {
     
     if (user && userData) {
         return (
+           <div className="flex items-center gap-2">
+            <NotificationBell />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -102,6 +105,7 @@ function UserMenu() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+           </div>
         );
     }
     
@@ -345,3 +349,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
