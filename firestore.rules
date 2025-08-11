@@ -2,35 +2,73 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users: Public read for profiles, but only the user can write to their own document.
+    
+    // Reglas para la colección 'users'
     match /users/{userId} {
-      allow get: if true;
-      allow list: if request.auth != null;
-      allow create, update, delete: if request.auth.uid == userId;
+      // Cualquiera puede leer perfiles de usuario (información pública)
+      allow read: if true;
+      // Solo el propio usuario puede crear o actualizar su perfil
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      // Solo un administrador puede eliminar usuarios (función de ejemplo)
+      allow delete: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
     }
 
-    // Services: Public read for all services, but write access is restricted.
+    // Reglas para la colección 'services'
     match /services/{serviceId} {
-      allow get, list: if true;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Cualquiera puede leer los servicios (público)
+      allow read: if true;
+      // Solo usuarios autenticados pueden crear servicios
+      allow create: if request.auth != null;
+      // Solo el propietario del servicio puede actualizarlo o eliminarlo
       allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
 
-      // Reviews: Public read, but only authenticated users can create them.
+      // Reglas para la subcolección 'reviews'
       match /reviews/{reviewId} {
-        allow get, list: if true;
-        allow create: if request.auth != null;
-        allow update, delete: if false; // Reviews cannot be edited or deleted by users.
+        // Cualquiera puede leer las reseñas
+        allow read: if true;
+        // Solo usuarios autenticados que no son dueños del servicio pueden crear una reseña
+        // y solo pueden crear una reseña por servicio.
+        allow create: if request.auth != null 
+                      && get(/databases/$(database)/documents/services/$(serviceId)).data.userId != request.auth.uid
+                      && !exists(/databases/$(database)/documents/services/$(serviceId)/reviews/$(request.auth.uid));
+        // Solo el autor de la reseña puede actualizarla o eliminarla
+        allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      }
+    }
+
+    // Reglas para la colección 'chats'
+    match /chats/{chatId} {
+      // Solo los participantes del chat pueden leer o escribir mensajes
+      allow read, write: if request.auth != null && request.auth.uid in resource.data.participants;
+      
+      // Reglas para la subcolección 'messages'
+      match /messages/{messageId} {
+         // Solo los participantes del chat pueden leer o escribir mensajes
+        allow read, write: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
       }
     }
     
-    // Chats: Only participants can read or write messages.
-    match /chats/{chatId} {
-      allow read, write: if request.auth.uid in resource.data.participants;
-
-      match /messages/{messageId} {
-        allow read, write: if request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
-      }
+    // Reglas para la colección 'hires'
+    match /hires/{hireId} {
+       // El cliente o el proveedor pueden leer la contratación.
+      allow read: if request.auth != null && (request.auth.uid == resource.data.clientId || request.auth.uid == resource.data.providerId);
+      
+      // Un cliente puede crear una nueva contratación.
+      allow create: if request.auth != null && request.resource.data.clientId == request.auth.uid
+                     && request.resource.data.status == 'pending';
+                     
+      // El cliente o el proveedor pueden actualizar el estado de la contratación.
+      allow update: if request.auth != null && (
+          // El cliente puede cancelar
+          (request.auth.uid == resource.data.clientId && request.resource.data.status == 'cancelled' && resource.data.status == 'pending') ||
+          // El proveedor puede aceptar/rechazar una solicitud pendiente
+          (request.auth.uid == resource.data.providerId && resource.data.status == 'pending' && (request.resource.data.status == 'accepted' || request.resource.data.status == 'rejected')) ||
+           // El proveedor puede marcar una solicitud aceptada como completada
+          (request.auth.uid == resource.data.providerId && resource.data.status == 'accepted' && request.resource.data.status == 'completed')
+      );
+      
+      // Nadie puede borrar contrataciones por ahora para mantener un historial.
+      allow delete: if false;
     }
   }
 }
