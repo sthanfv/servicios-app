@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 interface Hire {
   id: string;
+  serviceId: string;
   serviceTitle: string;
   serviceImage: string;
   providerName: string;
@@ -147,11 +148,13 @@ export default function MyHiresPage() {
                     </div>
                     <div className='flex-1'>
                         <CardHeader>
-                            <CardTitle>{hire.serviceTitle}</CardTitle>
-                             <Badge variant="outline" className={`w-fit border-none text-white ${statusInfo.color}`}>
-                                <StatusIcon className="mr-2 h-4 w-4" />
-                                {statusInfo.label}
-                            </Badge>
+                             <div className="flex justify-between items-start">
+                                <CardTitle>{hire.serviceTitle}</CardTitle>
+                                <Badge variant="outline" className={`w-fit border-none text-white ${statusInfo.color}`}>
+                                    <StatusIcon className="mr-2 h-4 w-4" />
+                                    {statusInfo.label}
+                                </Badge>
+                             </div>
                         </CardHeader>
                         <CardContent className="grid grid-cols-2 gap-4 text-sm">
                             <div className="flex items-center gap-2 text-muted-foreground">
@@ -163,7 +166,7 @@ export default function MyHiresPage() {
                                 <span>Fecha: {hire.date.toDate().toLocaleDateString()}</span>
                             </div>
                         </CardContent>
-                        <CardFooter>
+                        <CardFooter className="flex-wrap gap-2">
                            {hire.status === 'pending' && (
                              <AlertDialog>
                                 <AlertDialogTrigger asChild>
@@ -184,8 +187,13 @@ export default function MyHiresPage() {
                             </AlertDialog>
                            )}
                            {hire.status === 'completed' && (
-                               <Button variant="default">Dejar Reseña</Button>
+                               <Button asChild>
+                                   <Link href={`/service/${hire.serviceId}`}>Dejar Reseña</Link>
+                               </Button>
                            )}
+                           <Button variant="outline" asChild>
+                               <Link href={`/service/${hire.serviceId}`}>Ver Servicio</Link>
+                           </Button>
                         </CardFooter>
                     </div>
                 </div>

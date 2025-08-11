@@ -16,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 interface Hire {
   id: string;
   clientId: string;
+  serviceId: string;
   serviceTitle: string;
   clientName: string;
   message: string;
@@ -81,7 +82,7 @@ export default function RequestsPage() {
             notificationMessage = `Lamentablemente, tu solicitud para "${hire.serviceTitle}" fue rechazada.`;
         } else if (newStatus === 'completed') {
             notificationTitle = '¡Servicio Completado!';
-            notificationMessage = `El servicio "${hire.serviceTitle}" ha sido marcado como completado.`;
+            notificationMessage = `El servicio "${hire.serviceTitle}" ha sido marcado como completado. ¡No olvides dejar una reseña!`;
         }
         
         if (notificationTitle) {
@@ -168,7 +169,7 @@ export default function RequestsPage() {
                     <div className="flex justify-between items-start">
                         <div>
                              <CardTitle>{req.serviceTitle}</CardTitle>
-                             <CardDescription>Solicitud de: {req.clientName}</CardDescription>
+                             <CardDescription>Solicitud de: <Link href={`/profile/${req.clientId}`} className="text-primary hover:underline font-semibold">{req.clientName}</Link></CardDescription>
                         </div>
                         <Badge variant="outline" className={`w-fit border-none text-white ${statusInfo.color}`}>
                             <StatusIcon className="mr-2 h-4 w-4" />
@@ -187,7 +188,7 @@ export default function RequestsPage() {
                         </div>
                     )}
                  </CardContent>
-                 <CardFooter className="flex gap-2">
+                 <CardFooter className="flex-wrap gap-2">
                     {req.status === 'pending' && (
                         <>
                             <Button onClick={() => handleUpdateStatus(req, 'accepted')}>Aceptar</Button>
@@ -197,6 +198,12 @@ export default function RequestsPage() {
                      {req.status === 'accepted' && (
                         <Button onClick={() => handleUpdateStatus(req, 'completed')}>Marcar como Completada</Button>
                      )}
+                     <Button variant="outline" asChild>
+                        <Link href={`/chat?contact=${req.clientId}`}><MessageSquare className="mr-2"/>Contactar</Link>
+                     </Button>
+                     <Button variant="secondary" asChild>
+                        <Link href={`/service/${req.serviceId}`}>Ver Servicio</Link>
+                     </Button>
                  </CardFooter>
               </Card>
             )
