@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { auth, googleProvider, db } from "@/services/firebase";
-import { signInWithPopup, signInWithEmailAndPassword, User } from "firebase/auth";
+import { signInWithPopup, signInWithEmailAndPassword, User, AuthError } from "firebase/auth";
 import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -67,12 +67,13 @@ export default function Login() {
         userCredential = await signInWithEmailAndPassword(auth, email, password);
       }
       await handleSuccessfulLogin(userCredential.user);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+      const error = err as AuthError;
       toast({
         variant: "destructive",
         title: "Error de inicio de sesión",
-        description: "Las credenciales son incorrectas o ha ocurrido un error. Por favor, inténtelo de nuevo.",
+        description: error.message || "Las credenciales son incorrectas o ha ocurrido un error. Por favor, inténtelo de nuevo.",
       });
     } finally {
         setLoading(false);

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, collection, query, onSnapshot, addDoc, Timestamp, orderBy, runTransaction, increment, writeBatch } from 'firebase/firestore';
+import { doc, getDoc, collection, query, onSnapshot, Timestamp, orderBy, runTransaction } from 'firebase/firestore';
 import { db, auth } from '@/services/firebase';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useFavorites } from '@/hooks/use-favorites';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { HiringModal } from '@/components/hiring-modal';
 import { Progress } from '@/components/ui/progress';
@@ -521,5 +521,3 @@ export default function ServiceDetail() {
     </main>
   );
 }
-
-    

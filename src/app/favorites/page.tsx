@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db, auth } from '@/services/firebase';
-import { collection, doc, getDoc, query, where, onSnapshot } from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useUserData } from '@/hooks/use-user-data';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -48,6 +48,7 @@ export default function FavoritesPage() {
                 .map(docSnap => ({ id: docSnap.id, ...docSnap.data() } as Service));
             setFavoriteServices(servicesData);
           } catch(e) {
+             console.error(e);
              toast({ variant: 'destructive', title: 'Error', description: 'No se pudieron cargar los favoritos.' });
           } finally {
             setLoading(false);

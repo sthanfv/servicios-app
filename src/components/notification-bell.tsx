@@ -2,7 +2,7 @@
 'use client';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Bell, Handshake, MessageSquare, Star } from 'lucide-react';
+import { Bell, Handshake, Star } from 'lucide-react';
 import { useNotifications } from '@/hooks/use-notifications';
 import { ScrollArea } from './ui/scroll-area';
 import Link from 'next/link';
@@ -89,5 +89,3 @@ export function NotificationBell() {
         </Popover>
     );
 }
-
-    

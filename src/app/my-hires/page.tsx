@@ -7,10 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Loader2, ArrowLeft, LogIn, ShoppingCart, Calendar, User, Tag, AlertCircle, CheckCircle, XCircle, Hourglass, Star } from 'lucide-react';
+import { Loader2, ArrowLeft, LogIn, ShoppingCart, Calendar, User, AlertCircle, CheckCircle, XCircle, Hourglass, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { cva } from 'class-variance-authority';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 

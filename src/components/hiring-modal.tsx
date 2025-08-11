@@ -11,7 +11,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Textarea } from "@/components/ui/textarea"
 import { Loader2 } from "lucide-react"
@@ -64,7 +63,7 @@ export function HiringModal({
             const providerDoc = await getDoc(doc(db, 'users', providerId));
             const providerName = providerDoc.data()?.displayName ?? 'Proveedor';
 
-            const hireDocRef = await addDoc(collection(db, 'hires'), {
+            await addDoc(collection(db, 'hires'), {
                 serviceId,
                 providerId,
                 clientId,
@@ -150,5 +149,3 @@ export function HiringModal({
     </AlertDialog>
   )
 }
-
-    

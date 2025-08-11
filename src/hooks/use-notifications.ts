@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { db, auth } from '@/services/firebase';
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, writeBatch, Timestamp } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 export interface Notification {
@@ -13,7 +13,7 @@ export interface Notification {
   message: string;
   link: string;
   read: boolean;
-  createdAt: any;
+  createdAt: Timestamp;
 }
 
 export function useNotifications() {
@@ -85,5 +85,3 @@ export function useNotifications() {
 
   return { notifications, unreadCount, markAsRead, markAllAsRead, loading };
 }
-
-    

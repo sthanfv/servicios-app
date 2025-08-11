@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/services/firebase';
-import { doc, onSnapshot, DocumentData, Unsubscribe } from 'firebase/firestore';
+import { doc, onSnapshot, Unsubscribe, Timestamp } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 interface UserData {
@@ -9,7 +9,7 @@ interface UserData {
   displayName: string;
   email: string;
   role: 'user' | 'admin';
-  createdAt: any;
+  createdAt: Timestamp;
   favoriteServices?: string[];
   verified?: boolean;
   photoURL?: string;

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/services/firebase';
-import { collection, query, where, getDocs, orderBy, Query, DocumentData, limit, startAfter, QueryDocumentSnapshot } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Query, DocumentData, limit, startAfter, QueryDocumentSnapshot, Timestamp } from 'firebase/firestore';
 import { useDebounce } from './use-debounce';
 
 export interface Service {
@@ -11,7 +11,7 @@ export interface Service {
   category: string;
   imageUrl?: string;
   userId: string;
-  createdAt: any;
+  createdAt: Timestamp;
   price: number;
   city: string;
   zone?: string;

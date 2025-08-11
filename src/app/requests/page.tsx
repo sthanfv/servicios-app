@@ -6,11 +6,9 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Loader2, ArrowLeft, LogIn, Handshake, Calendar, User, Tag, AlertCircle, CheckCircle, XCircle, Hourglass, Star, MessageSquare } from 'lucide-react';
+import { Loader2, ArrowLeft, LogIn, Handshake, Calendar, CheckCircle, XCircle, Hourglass, Star, MessageSquare } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 
 interface Hire {
@@ -29,7 +27,7 @@ const statusConfig = {
     accepted: { label: 'Aceptada', icon: CheckCircle, color: 'bg-green-500' },
     rejected: { label: 'Rechazada', icon: XCircle, color: 'bg-red-500' },
     completed: { label: 'Completada', icon: Star, color: 'bg-blue-500' },
-    cancelled: { label: 'Cancelada', icon: AlertCircle, color: 'bg-gray-500' },
+    cancelled: { label: 'Cancelada', icon: XCircle, color: 'bg-gray-500' },
 };
 
 export default function RequestsPage() {
@@ -184,7 +182,7 @@ export default function RequestsPage() {
                     </div>
                     {req.message && (
                         <div className="p-3 bg-muted rounded-lg border">
-                            <p className="text-sm text-muted-foreground italic">"{req.message}"</p>
+                            <p className="text-sm text-muted-foreground italic">&quot;{req.message}&quot;</p>
                         </div>
                     )}
                  </CardContent>
@@ -213,5 +211,3 @@ export default function RequestsPage() {
     </div>
   );
 }
-
-    

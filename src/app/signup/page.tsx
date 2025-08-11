@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { auth, db } from "@/services/firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateProfile, AuthError } from "firebase/auth";
 import { doc, setDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,12 +51,13 @@ export default function SignUp() {
         description: "Tu cuenta ha sido creada exitosamente.",
       });
       router.push('/'); // Redirect to home on successful sign up
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
+      const error = err as AuthError;
       let description = "Ocurrió un error. Por favor, inténtelo de nuevo.";
-      if (err.code === 'auth/email-already-in-use') {
+      if (error.code === 'auth/email-already-in-use') {
         description = "Este correo electrónico ya está en uso.";
-      } else if (err.code === 'auth/weak-password') {
+      } else if (error.code === 'auth/weak-password') {
         description = "La contraseña debe tener al menos 6 caracteres.";
       }
       

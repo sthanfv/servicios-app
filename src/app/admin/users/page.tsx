@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db } from '@/services/firebase';
-import { collection, onSnapshot, doc, deleteDoc, orderBy, query, updateDoc, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, doc, deleteDoc, orderBy, query, updateDoc, Timestamp } from 'firebase/firestore';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Trash2, Loader2, ShieldCheck } from 'lucide-react';
@@ -15,7 +15,7 @@ interface User {
     displayName: string;
     email: string;
     role: string;
-    createdAt: any;
+    createdAt: Timestamp;
     verified?: boolean;
 }
 
@@ -100,8 +100,8 @@ export default function ManageUsers() {
                                 </TableCell>
                                 <TableCell>
                                     <Switch
-                                        checked={user.verified}
-                                        onCheckedChange={(checked) => toggleVerification(user.id, user.verified || false)}
+                                        checked={!!user.verified}
+                                        onCheckedChange={() => toggleVerification(user.id, user.verified || false)}
                                         aria-label="Verificar usuario"
                                      />
                                 </TableCell>

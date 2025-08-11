@@ -13,7 +13,8 @@ export const config = {
 const parseForm = async (req: NextRequest): Promise<{ fields: formidable.Fields; files: formidable.Files }> => {
   return new Promise((resolve, reject) => {
     const form = formidable({});
-    form.parse(req as any, (err, fields, files) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    form.parse(req as any, (err: any, fields: formidable.Fields, files: formidable.Files) => {
       if (err) return reject(err);
       resolve({ fields, files });
     });
@@ -39,9 +40,10 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(blob);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Upload error:', error);
-    return NextResponse.json({ error: 'Failed to upload image.', message: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ error: 'Failed to upload image.', message }, { status: 500 });
   }
 }
 
@@ -55,8 +57,9 @@ export async function DELETE(request: NextRequest) {
             token: process.env.BLOB_READ_WRITE_TOKEN
         });
         return NextResponse.json({success: true});
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error('Delete error:', error);
-        return NextResponse.json({ error: 'Failed to delete image.', message: error.message }, { status: 500 });
+        const message = error instanceof Error ? error.message : 'An unknown error occurred';
+        return NextResponse.json({ error: 'Failed to delete image.', message }, { status: 500 });
     }
 }
