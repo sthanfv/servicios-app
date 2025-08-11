@@ -53,14 +53,8 @@ export default function Login() {
       description: "¡Bienvenido de vuelta!",
     });
     
-    const finalUserDoc = await getDoc(userDocRef);
-    const userData = finalUserDoc.data();
-
-    if (userData && userData.role === 'admin') {
-      router.push('/admin');
-    } else {
-      router.push('/');
-    }
+    // The redirection logic is now handled on the main page after state is updated.
+    router.push('/');
   };
 
   const handleLogin = async (provider: 'email' | 'google') => {

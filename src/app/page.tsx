@@ -14,6 +14,7 @@ import { ServiceSearch } from "@/components/service-search";
 import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useServiceSearch } from "@/hooks/use-service-search";
+import { useEffect } from "react";
 
 
 function UserMenu() {
@@ -21,6 +22,13 @@ function UserMenu() {
     const [authLoading] = useAuthState(auth);
     const { theme, setTheme } = useTheme();
     const router = useRouter();
+
+    useEffect(() => {
+        // This effect handles role-based redirection after login.
+        if (!userDataLoading && userData && userData.role === 'admin') {
+            router.replace('/admin');
+        }
+    }, [userData, userDataLoading, router]);
 
     const handleSignOut = async () => {
         await auth.signOut();
