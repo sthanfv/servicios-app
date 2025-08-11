@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from "react";
@@ -32,19 +33,17 @@ export default function Login() {
   const { toast } = useToast();
   const router = useRouter();
 
-  // This function ensures a user document exists in Firestore and then redirects.
   const handleSuccessfulLogin = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
 
-    // If user doc doesn't exist (e.g., first-time Google login), create it.
     if (!userDocSnap.exists()) {
       await setDoc(userDocRef, {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
         createdAt: Timestamp.now(),
-        role: 'user', // Default role
+        role: 'user', 
         favoriteServices: []
       });
     }
@@ -54,7 +53,6 @@ export default function Login() {
       description: "¡Bienvenido de vuelta!",
     });
     
-    // Redirect to the home page. The home page will handle role-based redirection.
     router.replace('/'); 
   };
 
@@ -76,7 +74,8 @@ export default function Login() {
         title: "Error de inicio de sesión",
         description: "Las credenciales son incorrectas o ha ocurrido un error. Por favor, inténtelo de nuevo.",
       });
-      setLoading(false);
+    } finally {
+        setLoading(false);
     }
   };
 
@@ -141,7 +140,7 @@ export default function Login() {
               className="w-full"
               disabled={loading}
             >
-              {loading ? <Loader2 className="animate-spin" /> : 'Entrar con correo'}
+              {loading ? <><Loader2 className="mr-2 animate-spin" /> Entrando...</> : 'Entrar con correo'}
             </Button>
             
             <div className="relative w-full">
@@ -162,7 +161,7 @@ export default function Login() {
               onClick={() => handleLogin('google')}
               disabled={loading}
             >
-              <GoogleIcon className="mr-2 h-5 w-5" />
+              {loading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <GoogleIcon className="mr-2 h-5 w-5" />}
               Google
             </Button>
             <p className="text-center text-sm text-muted-foreground">
