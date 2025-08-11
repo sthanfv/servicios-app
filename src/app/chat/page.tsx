@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth, db } from '@/services/firebase';
@@ -34,7 +34,7 @@ const getChatId = (uid1: string, uid2: string) => {
 }
 
 
-export default function ChatPage() {
+function ChatClient() {
   const [user, authLoading] = useAuthState(auth);
   const searchParams = useSearchParams();
   const contactId = searchParams.get('contact');
@@ -330,4 +330,17 @@ export default function ChatPage() {
         </div>
     </main>
   );
+}
+
+
+export default function ChatPage() {
+    return (
+        <Suspense fallback={
+            <div className="flex h-screen w-full items-center justify-center">
+                <Loader2 className="h-16 w-16 animate-spin text-primary" />
+            </div>
+        }>
+            <ChatClient />
+        </Suspense>
+    )
 }
