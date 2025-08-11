@@ -18,7 +18,8 @@ import { Loader2 } from "lucide-react"
 import { Label } from "./ui/label"
 import { useToast } from "@/hooks/use-toast"
 import { db } from "@/services/firebase"
-import { collection, addDoc, Timestamp } from "firebase/firestore"
+import { collection, addDoc, Timestamp, doc, getDoc } from "firebase/firestore"
+import { useUserData } from "@/hooks/use-user-data"
 
 interface HiringModalProps {
   open: boolean;
@@ -26,6 +27,7 @@ interface HiringModalProps {
   serviceId: string;
   serviceTitle: string;
   servicePrice: number;
+  serviceImage: string;
   providerId: string;
   clientId: string;
 }
@@ -36,9 +38,11 @@ export function HiringModal({
   serviceId,
   serviceTitle,
   servicePrice,
+  serviceImage,
   providerId,
   clientId,
 }: HiringModalProps) {
+    const { userData: clientData } = useUserData();
     const [date, setDate] = React.useState<Date | undefined>(new Date());
     const [message, setMessage] = React.useState('');
     const [loading, setLoading] = React.useState(false);
@@ -49,18 +53,31 @@ export function HiringModal({
             toast({ variant: 'destructive', title: 'Error', description: 'Por favor, selecciona una fecha.' });
             return;
         }
+        if (!clientData) {
+            toast({ variant: 'destructive', title: 'Error', description: 'No se pudo obtener tu información de usuario.' });
+            return;
+        }
+
         setLoading(true);
         try {
+            // Get provider name
+            const providerDoc = await getDoc(doc(db, 'users', providerId));
+            const providerName = providerDoc.data()?.displayName ?? 'Proveedor';
+
             await addDoc(collection(db, 'hires'), {
                 serviceId,
                 providerId,
                 clientId,
                 serviceTitle,
                 servicePrice,
+                serviceImage,
+                clientName: clientData.displayName,
+                providerName,
                 date: Timestamp.fromDate(date),
                 message,
                 status: 'pending', // pending, accepted, rejected, completed
                 createdAt: Timestamp.now(),
+                updatedAt: Timestamp.now(),
             });
 
             toast({ title: '¡Solicitud enviada!', description: 'El proveedor ha sido notificado. Recibirás una respuesta pronto.' });

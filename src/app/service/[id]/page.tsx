@@ -418,13 +418,14 @@ export default function ServiceDetail() {
             </Card>
         </div>
       </div>
-      {currentUser && !isOwner && (
+      {currentUser && !isOwner && service && (
         <HiringModal
             open={hiringModalOpen}
             onOpenChange={setHiringModalOpen}
             serviceId={serviceId}
             serviceTitle={service.title}
             servicePrice={service.price}
+            serviceImage={service.imageUrl || ''}
             providerId={service.userId}
             clientId={currentUser.uid}
         />

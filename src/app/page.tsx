@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare, Megaphone, Users, MapPin, Star } from "lucide-react";
+import { LogIn, LogOut, PlusCircle, User, Moon, Sun, Shield, Heart, Briefcase, MessageSquare, Megaphone, Users, MapPin, Star, Handshake, ShoppingCart } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import { useUserData } from "@/hooks/use-user-data";
@@ -63,9 +63,18 @@ function UserMenu() {
                   <User className="mr-2 h-4 w-4" />
                   <span>Mis Servicios</span>
                 </DropdownMenuItem>
+                 <DropdownMenuItem onSelect={() => router.push('/requests')}>
+                    <Handshake className="mr-2 h-4 w-4" />
+                    <span>Solicitudes Recibidas</span>
+                </DropdownMenuItem>
                  <DropdownMenuItem onSelect={() => router.push('/add')}>
                   <PlusCircle className="mr-2 h-4 w-4" />
                   <span>Agregar Servicio</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                 <DropdownMenuItem onSelect={() => router.push('/my-hires')}>
+                    <ShoppingCart className="mr-2 h-4 w-4" />
+                    <span>Mis Contrataciones</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem onSelect={() => router.push('/chat')}>
                     <MessageSquare className="mr-2 h-4 w-4" />
