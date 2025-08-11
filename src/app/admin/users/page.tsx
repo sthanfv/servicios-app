@@ -58,7 +58,8 @@ export default function ManageUsers() {
         try {
             await updateDoc(userRef, { verified: !currentStatus });
             toast({ title: 'Éxito', description: `Usuario ${!currentStatus ? 'verificado' : 'no verificado'}.` });
-        } catch (e) {
+        } catch (error) {
+            console.error(error);
             toast({ variant: 'destructive', title: 'Error', description: 'No se pudo actualizar el estado de verificación.' });
         }
     }
@@ -101,7 +102,7 @@ export default function ManageUsers() {
                                 <TableCell>
                                     <Switch
                                         checked={!!user.verified}
-                                        onCheckedChange={() => toggleVerification(user.id, user.verified || false)}
+                                        onCheckedChange={() => toggleVerification(user.id, !!user.verified)}
                                         aria-label="Verificar usuario"
                                      />
                                 </TableCell>

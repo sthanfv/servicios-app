@@ -42,9 +42,13 @@ const faqData = `
    - En la página de inicio de sesión, haz clic en "¿Olvidaste tu contraseña?" y sigue las instrucciones para recibir un correo de restablecimiento.
 `;
 
+const PromptInputSchema = SupportChatInputSchema.extend({
+    faqData: z.string().describe('Los datos de las preguntas frecuentes.'),
+});
+
 const supportChatPrompt = ai.definePrompt({
     name: 'supportChatPrompt',
-    input: { schema: SupportChatInputSchema },
+    input: { schema: PromptInputSchema },
     output: { schema: SupportChatOutputSchema },
     prompt: `Eres "Yani", el asistente virtual amigable y servicial de ServiYa, una plataforma que conecta proveedores de servicios con clientes.
 
