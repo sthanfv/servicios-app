@@ -122,8 +122,13 @@ export function useServiceSearch() {
 
   // Effect to refetch services when filters change
   useEffect(() => {
+    // This function reference `fetchServices` will change when its dependencies change,
+    // which are `selectedCategory`, `debouncedSearchTerm`, and `lastDoc`.
+    // We want to trigger a fresh search (not load-more) when filters change.
     fetchServices(false);
-  }, [debouncedSearchTerm, selectedCategory, fetchServices]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearchTerm, selectedCategory]);
+
 
   const fetchMore = () => {
       if(hasMore && !loadingMore) {
