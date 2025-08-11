@@ -26,7 +26,7 @@ export async function suggestDescription(input: SuggestionInput): Promise<Sugges
 const suggestionPrompt = ai.definePrompt({
     name: 'suggestionPrompt',
     input: { schema: SuggestionInputSchema },
-    output: { schema: SuggestionOutputSchema },
+    output: { schema: SuggestionOutputSchema.optional() },
     prompt: `Eres un experto en marketing y redacción publicitaria especializado en la creación de anuncios de servicios locales.
     
     Tu tarea es generar una descripción de servicio atractiva, profesional y vendedora basada únicamente en el título proporcionado.
