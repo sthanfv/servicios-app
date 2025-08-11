@@ -22,6 +22,7 @@ interface Message {
 
 interface Conversation {
     id: string;
+    otherUserId: string;
     otherUserName: string;
     otherUserAvatar: string;
     lastMessage: string;
@@ -60,14 +61,12 @@ export default function ChatPage() {
             const otherUserId = data.participants.find((p: string) => p !== user.uid);
             
             if(otherUserId) {
-                // We need to get the other user's info (name, avatar)
-                // For simplicity, we assume we have a 'users' collection with this info
-                // This part is a mock for now, but should be a fetch from a 'users' collection
                  const userDoc = await getDoc(doc(db, 'users', otherUserId));
                  const otherUserData = userDoc.data();
 
                 convos.push({
                     id: chatDoc.id,
+                    otherUserId: otherUserId,
                     otherUserName: otherUserData?.displayName ?? 'Usuario',
                     otherUserAvatar: otherUserData?.photoURL ?? `https://placehold.co/40x40.png?text=${otherUserData?.displayName?.charAt(0) ?? 'U'}`,
                     lastMessage: data.lastMessage?.text ?? 'No hay mensajes aún',
@@ -87,6 +86,15 @@ export default function ChatPage() {
         if (contactId && user && user.uid !== contactId) {
             setChatLoading(true);
             const chatId = getChatId(user.uid, contactId);
+
+            // Check if conversation already exists in state to avoid re-fetching
+            const existingConvo = conversations.find(c => c.id === chatId);
+            if (existingConvo) {
+                setSelectedConversation(existingConvo);
+                setChatLoading(false);
+                return;
+            }
+
             const chatRef = doc(db, 'chats', chatId);
             const chatSnap = await getDoc(chatRef);
             
@@ -102,6 +110,7 @@ export default function ChatPage() {
                  const data = chatSnap.data();
                  convo = {
                     id: chatId,
+                    otherUserId: contactId,
                     otherUserName: data.participantNames?.[contactId] ?? otherUserName,
                     otherUserAvatar: otherUserAvatar,
                     lastMessage: data.lastMessage?.text ?? 'Inicia la conversación',
@@ -123,10 +132,13 @@ export default function ChatPage() {
                 await setDoc(chatRef, newChatData);
                  convo = {
                     id: chatId,
+                    otherUserId: contactId,
                     otherUserName: otherUserName,
                     otherUserAvatar: otherUserAvatar,
                     lastMessage: 'Inicia la conversación',
                 };
+                 // Add new conversation to the list locally to avoid another snapshot read
+                 setConversations(prev => [convo, ...prev]);
             }
             setSelectedConversation(convo);
             setChatLoading(false);
@@ -135,7 +147,8 @@ export default function ChatPage() {
     if (contactId && user) {
         setupInitialChat();
     }
-  }, [contactId, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contactId, user, conversations]);
 
 
   // Effect for fetching messages of selected conversation
@@ -257,11 +270,13 @@ export default function ChatPage() {
                             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSelectedConversation(null)}>
                                 <ArrowLeft />
                             </Button>
-                            <Avatar>
-                                <AvatarImage src={selectedConversation.otherUserAvatar}/>
-                                <AvatarFallback>{selectedConversation.otherUserName.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <h3 className="text-lg font-semibold">{selectedConversation.otherUserName}</h3>
+                            <Link href={`/profile/${selectedConversation.otherUserId}`} className="flex items-center gap-4 group">
+                                <Avatar>
+                                    <AvatarImage src={selectedConversation.otherUserAvatar}/>
+                                    <AvatarFallback>{selectedConversation.otherUserName.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <h3 className="text-lg font-semibold group-hover:underline">{selectedConversation.otherUserName}</h3>
+                            </Link>
                         </header>
                         <ScrollArea className="flex-1 p-4 bg-muted/20" ref={scrollAreaRef}>
                             {chatLoading ? (
