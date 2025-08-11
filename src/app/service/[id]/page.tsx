@@ -16,6 +16,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useFavorites } from '@/hooks/use-favorites';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface Service {
   title: string;
@@ -53,7 +54,17 @@ function FavoriteButton({ serviceId }: { serviceId: string }) {
 
     return (
         <Button variant="outline" size="icon" onClick={toggleFavorite} aria-label="Toggle Favorite">
-            <Heart className={`transition-all ${isFavorited ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+             <AnimatePresence>
+                <motion.div
+                    key={isFavorited ? 'favorited' : 'not-favorited'}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    <Heart className={`transition-colors ${isFavorited ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+                </motion.div>
+            </AnimatePresence>
         </Button>
     )
 }

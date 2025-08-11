@@ -1,4 +1,3 @@
-
 'use client';
 import Link from "next/link";
 import Image from "next/image";
@@ -16,6 +15,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useServiceSearch } from "@/hooks/use-service-search";
 import { useEffect } from "react";
+import { motion } from "framer-motion";
 
 
 function UserMenu() {
@@ -155,20 +155,39 @@ export default function Home() {
       <main className="flex-grow">
         {/* Hero Section */}
         <section className="container text-center py-20 md:py-32">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 text-primary">
+            <motion.h1 
+              className="text-4xl md:text-6xl font-extrabold tracking-tighter mb-4 text-primary"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
                 La forma simple de conectar servicios
-            </h1>
-            <p className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8">
+            </motion.h1>
+            <motion.p 
+              className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
                 Publica, descubre y conecta con profesionales en tu área. Rápido, seguro y sin complicaciones.
-            </p>
-            <div className="flex justify-center gap-4">
-                <Button size="lg" asChild>
-                    <Link href="/add">Publicar un Servicio</Link>
-                </Button>
-                 <Button size="lg" variant="outline" onClick={() => document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' })}>
-                    Explorar Servicios
-                </Button>
-            </div>
+            </motion.p>
+            <motion.div 
+              className="flex justify-center gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                    <Button size="lg" asChild>
+                        <Link href="/add">Publicar un Servicio</Link>
+                    </Button>
+                </motion.div>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button size="lg" variant="outline" onClick={() => document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' })}>
+                      Explorar Servicios
+                  </Button>
+                </motion.div>
+            </motion.div>
         </section>
 
         {/* Recent Services Section */}
@@ -299,9 +318,11 @@ export default function Home() {
                   Únete a nuestra comunidad hoy mismo. Es gratis y solo toma un minuto.
                 </p>
                 <div className="flex justify-center gap-4">
-                    <Button size="lg" asChild className="w-full sm:w-auto">
-                        <Link href="/signup">Crear una cuenta</Link>
-                    </Button>
+                    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                      <Button size="lg" asChild className="w-full sm:w-auto">
+                          <Link href="/signup">Crear una cuenta</Link>
+                      </Button>
+                    </motion.div>
                 </div>
               </div>
           </div>
@@ -315,5 +336,3 @@ export default function Home() {
     </div>
   );
 }
-
-    

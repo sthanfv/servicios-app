@@ -10,38 +10,59 @@ import { useServiceSearch, Service } from '@/hooks/use-service-search';
 import { Loader2, Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
+import { motion } from 'framer-motion';
+
+const gridContainerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+        },
+    },
+};
+
+const gridItemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+        y: 0,
+        opacity: 1,
+    },
+};
 
 function ServiceCard({ service }: { service: Service }) {
   return (
-    <Link href={`/service/${service.id}`} className="group">
-      <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-        {service.imageUrl ? (
-          <div className="relative w-full h-48">
-            <Image
-              src={service.imageUrl}
-              alt={service.title}
-              layout="fill"
-              objectFit="cover"
-              className="rounded-t-xl"
-              data-ai-hint="service image"
-            />
-          </div>
-        ) : (
-          <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-xl">
-            <span className="text-muted-foreground">Sin imagen</span>
-          </div>
-        )}
-        <CardHeader>
-          <CardTitle>{service.title}</CardTitle>
-        </CardHeader>
-        <CardContent className="flex-grow">
-          <p className="text-muted-foreground line-clamp-3">{service.description}</p>
-        </CardContent>
-        <CardFooter>
-          <Badge variant="secondary">{service.category}</Badge>
-        </CardFooter>
-      </Card>
-    </Link>
+    <motion.div variants={gridItemVariants} className="h-full">
+        <Link href={`/service/${service.id}`} className="group h-full">
+        <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
+            {service.imageUrl ? (
+            <div className="relative w-full h-48">
+                <Image
+                src={service.imageUrl}
+                alt={service.title}
+                layout="fill"
+                objectFit="cover"
+                className="rounded-t-xl"
+                data-ai-hint="service image"
+                />
+            </div>
+            ) : (
+            <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-xl">
+                <span className="text-muted-foreground">Sin imagen</span>
+            </div>
+            )}
+            <CardHeader>
+            <CardTitle>{service.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow">
+            <p className="text-muted-foreground line-clamp-3">{service.description}</p>
+            </CardContent>
+            <CardFooter>
+            <Badge variant="secondary">{service.category}</Badge>
+            </CardFooter>
+        </Card>
+        </Link>
+    </motion.div>
   );
 }
 
@@ -154,16 +175,19 @@ export function ServiceSearch() {
           </p>
         </div>
       ) : (
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <motion.div 
+            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            variants={gridContainerVariants}
+            initial="hidden"
+            animate="visible"
+        >
           {services.map((service) => (
             <ServiceCard key={service.id} service={service} />
           ))}
-        </div>
+        </motion.div>
       )}
     </>
   );
 }
 
 ServiceSearch.FeaturedCard = FeaturedServiceCard;
-
-    
