@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +11,8 @@ import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import { motion } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+
 
 const gridContainerVariants = {
     hidden: { opacity: 0 },
@@ -53,15 +55,21 @@ function ServiceCard({ service }: { service: Service }) {
             </div>
             <CardHeader>
                 <CardTitle>{service.title}</CardTitle>
-                 <div className="flex items-center text-muted-foreground text-sm gap-2 pt-1">
-                    <MapPin className="h-4 w-4" />
-                    <span>{service.city}{service.zone ? `, ${service.zone}` : ''}</span>
-                </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-2">
-                 <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground line-clamp-1 flex-grow">{service.providerName}</p>
-                    {service.providerVerified && (
+                <CardDescription className="text-muted-foreground line-clamp-2">{service.description}</CardDescription>
+            </CardContent>
+             <CardFooter className="flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={service.providerImage} alt={service.providerName} />
+                      <AvatarFallback>
+                        {service.providerName?.split(' ').map(n => n[0]).join('')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex items-center gap-1">
+                      <p className="text-sm font-medium">{service.providerName}</p>
+                       {service.providerVerified && (
                         <TooltipProvider>
                             <Tooltip>
                                 <TooltipTrigger>
@@ -72,12 +80,9 @@ function ServiceCard({ service }: { service: Service }) {
                                 </TooltipContent>
                             </Tooltip>
                         </TooltipProvider>
-                    )}
+                      )}
+                    </div>
                 </div>
-                <p className="text-muted-foreground line-clamp-2">{service.description}</p>
-            </CardContent>
-             <CardFooter className="flex justify-between items-center">
-                <Badge variant="secondary">{service.category}</Badge>
                 <span className="text-lg font-bold text-primary">
                     ${new Intl.NumberFormat('es-CO').format(service.price)}
                 </span>
