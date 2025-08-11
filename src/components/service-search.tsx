@@ -21,12 +21,12 @@ function ServiceCard({ service }: { service: Service }) {
               alt={service.title}
               layout="fill"
               objectFit="cover"
-              className="rounded-t-lg"
+              className="rounded-t-xl"
               data-ai-hint="service image"
             />
           </div>
         ) : (
-          <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-lg">
+          <div className="w-full h-48 bg-muted flex items-center justify-center rounded-t-xl">
             <span className="text-muted-foreground">Sin imagen</span>
           </div>
         )}
@@ -47,7 +47,7 @@ function ServiceCard({ service }: { service: Service }) {
 function ServiceCardSkeleton() {
     return (
         <Card className="h-full flex flex-col overflow-hidden">
-            <Skeleton className="w-full h-48 rounded-t-lg" />
+            <Skeleton className="w-full h-48 rounded-t-xl" />
             <CardHeader>
                 <Skeleton className="h-6 w-3/4" />
             </CardHeader>
@@ -75,11 +75,11 @@ function FeaturedServiceCard({ service }: { service: Service }) {
                 alt={service.title}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-t-lg"
+                className="rounded-t-xl"
                 data-ai-hint="featured service"
             />
             ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-lg">
+            <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-xl">
                 <span className="text-muted-foreground">Sin imagen</span>
             </div>
             )}
