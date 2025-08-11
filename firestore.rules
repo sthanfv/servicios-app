@@ -1,48 +1,36 @@
+
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    // Users:
-    // 1. Allow users to read their own document fully.
-    // 2. Allow authenticated users to read public fields of other users (displayName, photoURL).
-    // 3. Allow users to create their own user document on signup.
-    // 4. Allow users to update their own document (e.g., for favorites).
+    
+    // Users can be read by anyone, but only modified by the owner.
     match /users/{userId} {
-      allow read: if request.auth != null; // Allow any authenticated user to read public profiles
-      allow get, update, delete: if request.auth.uid == userId; // Allow user to manage their own document
-      allow create: if request.auth.uid == userId;
+      allow read: if true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Services:
-    // 1. Allow anyone to read services (get, list).
-    // 2. Allow authenticated users to create a service, ensuring they are the owner.
-    // 3. Allow only the owner to update or delete their service.
+    // Services can be read by anyone, but only modified by the owner.
     match /services/{serviceId} {
-      allow read: if true;
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow get, list: if true;
+      allow create, update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
 
-      // Reviews Subcollection:
-      // 1. Allow anyone to read reviews.
-      // 2. Allow authenticated users to create a review.
-      // 3. Prevent users from editing/deleting reviews to maintain integrity.
+      // Reviews can be read by anyone, created by authenticated users, but not edited.
       match /reviews/{reviewId} {
-        allow read: if true;
+        allow get, list: if true;
         allow create: if request.auth != null;
-        allow update, delete: if false; // Reviews are immutable
+        allow update, delete: if false;
       }
     }
     
-    // Chats:
-    // 1. Allow only participants to read or write to a chat room.
+    // Chats can only be accessed by participants.
     match /chats/{chatId} {
-      allow read, write: if request.auth != null && request.auth.uid in resource.data.participants;
+      allow read, create, update, delete: if request.auth != null && request.auth.uid in resource.data.participants;
       
-      // Messages Subcollection:
-      // 1. Allow only participants of the parent chat to read/write messages.
+      // Messages within a chat follow the same rule.
       match /messages/{messageId} {
-         allow read, write: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/chats/$(chatId)).data.participants;
+        allow read, create: if request.auth != null && get(/databases/$(database)/documents/chats/$(chatId)).data.participants.hasAny([request.auth.uid]);
+        allow update, delete: if false;
       }
     }
   }
