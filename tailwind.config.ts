@@ -92,7 +92,7 @@ export default {
         'accordion-up': 'accordion-up 0.2s ease-out',
       },
       backdropBlur: {
-        xs: '2px',
+        xs: '10px',
       },
     },
   },
