@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { auth, googleProvider, db } from "@/services/firebase";
 import { signInWithPopup, signInWithEmailAndPassword, User } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,13 +35,26 @@ export default function Login() {
   const handleSuccessfulLogin = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+      // If user doc doesn't exist (e.g., first time Google login), create it
+      await setDoc(userDocRef, {
+        uid: user.uid,
+        displayName: user.displayName,
+        email: user.email,
+        createdAt: Timestamp.now(),
+        role: 'user', // Default role
+        favoriteServices: [] // Initialize favorites
+      });
+    }
     
     toast({
       title: "Inicio de sesión exitoso",
       description: "¡Bienvenido de vuelta!",
     });
     
-    if (userDocSnap.exists() && userDocSnap.data()?.role === 'admin') {
+    const finalUserDoc = await getDoc(userDocRef); // Re-fetch to get merged data if needed
+    if (finalUserDoc.exists() && finalUserDoc.data()?.role === 'admin') {
       router.push('/admin');
     } else {
       router.push('/');
@@ -63,7 +76,7 @@ export default function Login() {
       toast({
         variant: "destructive",
         title: "Error de inicio de sesión",
-        description: "Las credenciales son incorrectas. Por favor, inténtelo de nuevo.",
+        description: "Las credenciales son incorrectas o ha ocurrido un error. Por favor, inténtelo de nuevo.",
       });
     } finally {
       setLoading(false);
