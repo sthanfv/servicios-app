@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useServiceSearch, Service } from '@/hooks/use-service-search';
-import { Loader2, Search, MapPin, ShieldCheck } from 'lucide-react';
+import { Loader2, Search, Star, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Skeleton } from './ui/skeleton';
 import { motion } from 'framer-motion';
@@ -33,61 +33,76 @@ const gridItemVariants = {
 };
 
 function ServiceCard({ service }: { service: Service }) {
+  const rating = service.averageRating?.toFixed(1) || '0.0';
+  const reviewCount = service.reviewCount || 0;
+
   return (
     <motion.div variants={gridItemVariants} className="h-full">
         <Link href={`/service/${service.id}`} className="group h-full">
-        <Card className="h-full flex flex-col overflow-hidden transform transition-transform duration-300 group-hover:scale-105 group-hover:shadow-xl">
-            <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-xl">
-              {service.imageUrl ? (
-                <Image
-                src={service.imageUrl}
-                alt={service.title}
-                layout="fill"
-                objectFit="cover"
-                className="transition-transform duration-300 group-hover:scale-110"
-                data-ai-hint="service image"
-                />
-              ) : (
-                <div className="w-full h-full bg-muted flex items-center justify-center">
-                    <span className="text-muted-foreground">Sin imagen</span>
-                </div>
-              )}
-            </div>
-            <CardHeader>
-                <CardTitle>{service.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow space-y-2">
-                <CardDescription className="text-muted-foreground line-clamp-2">{service.description}</CardDescription>
-            </CardContent>
-             <CardFooter className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={service.providerImage} alt={service.providerName} />
-                      <AvatarFallback>
-                        {service.providerName?.split(' ').map(n => n[0]).join('')}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex items-center gap-1">
-                      <p className="text-sm font-medium">{service.providerName}</p>
-                       {service.providerVerified && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger>
-                                    <ShieldCheck className="h-5 w-5 text-blue-500" />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    <p>Proveedor Verificado</p>
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
-                      )}
+            <Card className="h-full flex flex-col overflow-hidden transform transition-all duration-300 group-hover:scale-105 group-hover:shadow-xl">
+                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-xl">
+                  {service.imageUrl ? (
+                    <Image
+                    src={service.imageUrl}
+                    alt={service.title}
+                    layout="fill"
+                    objectFit="cover"
+                    className="transition-transform duration-300 group-hover:scale-110"
+                    data-ai-hint="service image"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <span className="text-muted-foreground">Sin imagen</span>
+                    </div>
+                  )}
+                   <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/60 to-transparent">
+                        <span className="text-xl font-bold text-white">
+                            ${new Intl.NumberFormat('es-CO').format(service.price)}
+                        </span>
                     </div>
                 </div>
-                <span className="text-lg font-bold text-primary">
-                    ${new Intl.NumberFormat('es-CO').format(service.price)}
-                </span>
-            </CardFooter>
-        </Card>
+                <CardHeader>
+                    <div className="flex justify-between items-start">
+                         <CardTitle className="text-lg line-clamp-1">{service.title}</CardTitle>
+                         <Badge variant="secondary">{service.category}</Badge>
+                    </div>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    <CardDescription className="line-clamp-2">{service.description}</CardDescription>
+                </CardContent>
+                 <CardFooter className="border-t pt-4">
+                    <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={service.providerImage} alt={service.providerName} />
+                              <AvatarFallback>
+                                {service.providerName?.split(' ').map(n => n[0]).join('')}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex items-center gap-1">
+                              <p className="text-sm font-medium">{service.providerName}</p>
+                               {service.providerVerified && (
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger>
+                                            <ShieldCheck className="h-5 w-5 text-blue-500" />
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Proveedor Verificado</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Star className="h-4 w-4 text-yellow-500 fill-yellow-500" />
+                            <span className="font-bold text-foreground">{rating}</span>
+                            <span>({reviewCount})</span>
+                        </div>
+                    </div>
+                </CardFooter>
+            </Card>
         </Link>
     </motion.div>
   );
@@ -99,17 +114,26 @@ function ServiceCardSkeleton() {
         <Card className="h-full flex flex-col overflow-hidden">
             <Skeleton className="w-full aspect-[4/3] rounded-t-xl" />
             <CardHeader>
-                <Skeleton className="h-6 w-3/4" />
-                <Skeleton className="h-4 w-1/2 mt-1" />
+                <div className="flex justify-between items-start">
+                    <Skeleton className="h-6 w-3/5" />
+                    <Skeleton className="h-6 w-1/4" />
+                </div>
             </CardHeader>
             <CardContent className="flex-grow space-y-2">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-2/3" />
-                 <div className="flex justify-between items-center pt-2">
-                    <Skeleton className="h-6 w-1/4" />
-                    <Skeleton className="h-6 w-1/3" />
-                </div>
             </CardContent>
+            <CardFooter className="border-t pt-4">
+                <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-5 w-24" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                         <Skeleton className="h-5 w-16" />
+                    </div>
+                </div>
+            </CardFooter>
         </Card>
     );
 }

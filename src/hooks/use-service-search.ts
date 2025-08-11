@@ -18,6 +18,8 @@ export interface Service {
   providerName: string;
   providerImage?: string;
   providerVerified?: boolean;
+  reviewCount?: number;
+  averageRating?: number;
 }
 
 const SERVICES_PER_PAGE = 8;
@@ -125,7 +127,10 @@ export function useServiceSearch() {
     // This function reference `fetchServices` will change when its dependencies change,
     // which are `selectedCategory`, `debouncedSearchTerm`, and `lastDoc`.
     // We want to trigger a fresh search (not load-more) when filters change.
-    fetchServices(false);
+    const search = async () => {
+        await fetchServices(false);
+    }
+    search();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, selectedCategory]);
 
