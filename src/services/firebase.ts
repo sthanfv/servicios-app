@@ -12,6 +12,11 @@ const firebaseConfig = {
   measurementId: "G-WZFDKMZB9L"
 };
 
+// Check if Firebase config keys are provided
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  throw new Error('Missing Firebase configuration. Please set NEXT_PUBLIC_FIREBASE_API_KEY and other required variables in your .env.local file.');
+}
+
 
 // Initialize Firebase
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
