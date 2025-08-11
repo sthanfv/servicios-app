@@ -15,22 +15,16 @@ export default function AdminLayout({
   const { userData, loading } = useUserData();
   const router = useRouter();
 
-  // Debug logs to check the state in the browser console
-  console.log("AdminLayout loading:", loading);
-  console.log("AdminLayout userData:", userData);
-
   // This effect acts as a route guard.
   useEffect(() => {
     // If loading is finished and the user is not an admin, redirect.
     if (!loading && (!userData || userData.role !== 'admin')) {
-      console.log("Redirecting: Not an admin or no user data.");
       router.replace('/');
     }
   }, [userData, loading, router]);
 
 
-  // While loading, or if the user is not an admin yet (before redirect), show a loading screen.
-  // This prevents flashing unauthorized content.
+  // While loading, show a loading screen.
   if (loading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
@@ -42,7 +36,7 @@ export default function AdminLayout({
     );
   }
 
-  // If after loading, the user is still not an admin, render null while redirecting.
+  // If after loading, the user is not an admin, render null while redirecting.
   if (!userData || userData.role !== 'admin') {
       return null;
   }
