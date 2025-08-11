@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db, auth } from '@/services/firebase';
-import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, Timestamp } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, orderBy, doc, updateDoc, Timestamp, addDoc } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,6 +15,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 interface Hire {
   id: string;
+  clientId: string;
   serviceTitle: string;
   clientName: string;
   message: string;
@@ -63,10 +64,38 @@ export default function RequestsPage() {
     return () => unsubscribe();
   }, [user, authLoading, toast]);
 
-  const handleUpdateStatus = async (hireId: string, newStatus: Hire['status']) => {
+  const handleUpdateStatus = async (hire: Hire, newStatus: Hire['status']) => {
     try {
-        const hireRef = doc(db, 'hires', hireId);
+        const hireRef = doc(db, 'hires', hire.id);
         await updateDoc(hireRef, { status: newStatus, updatedAt: Timestamp.now() });
+
+        // Create notification for the client
+        let notificationTitle = '';
+        let notificationMessage = '';
+
+        if (newStatus === 'accepted') {
+            notificationTitle = '¡Solicitud Aceptada!';
+            notificationMessage = `Tu solicitud para el servicio "${hire.serviceTitle}" ha sido aceptada.`;
+        } else if (newStatus === 'rejected') {
+            notificationTitle = 'Solicitud Rechazada';
+            notificationMessage = `Lamentablemente, tu solicitud para "${hire.serviceTitle}" fue rechazada.`;
+        } else if (newStatus === 'completed') {
+            notificationTitle = '¡Servicio Completado!';
+            notificationMessage = `El servicio "${hire.serviceTitle}" ha sido marcado como completado.`;
+        }
+        
+        if (notificationTitle) {
+            await addDoc(collection(db, 'notifications'), {
+                userId: hire.clientId,
+                type: `hire_${newStatus}`,
+                title: notificationTitle,
+                message: notificationMessage,
+                link: `/my-hires`,
+                read: false,
+                createdAt: Timestamp.now()
+            });
+        }
+
         toast({ title: 'Estado actualizado', description: 'La solicitud ha sido actualizada correctamente.' });
     } catch (error) {
         console.error("Error updating status: ", error);
@@ -161,12 +190,12 @@ export default function RequestsPage() {
                  <CardFooter className="flex gap-2">
                     {req.status === 'pending' && (
                         <>
-                            <Button onClick={() => handleUpdateStatus(req.id, 'accepted')}>Aceptar</Button>
-                            <Button variant="destructive" onClick={() => handleUpdateStatus(req.id, 'rejected')}>Rechazar</Button>
+                            <Button onClick={() => handleUpdateStatus(req, 'accepted')}>Aceptar</Button>
+                            <Button variant="destructive" onClick={() => handleUpdateStatus(req, 'rejected')}>Rechazar</Button>
                         </>
                     )}
                      {req.status === 'accepted' && (
-                        <Button onClick={() => handleUpdateStatus(req.id, 'completed')}>Marcar como Completada</Button>
+                        <Button onClick={() => handleUpdateStatus(req, 'completed')}>Marcar como Completada</Button>
                      )}
                  </CardFooter>
               </Card>

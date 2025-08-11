@@ -64,7 +64,7 @@ export function HiringModal({
             const providerDoc = await getDoc(doc(db, 'users', providerId));
             const providerName = providerDoc.data()?.displayName ?? 'Proveedor';
 
-            await addDoc(collection(db, 'hires'), {
+            const hireDocRef = await addDoc(collection(db, 'hires'), {
                 serviceId,
                 providerId,
                 clientId,
@@ -78,6 +78,17 @@ export function HiringModal({
                 status: 'pending', // pending, accepted, rejected, completed
                 createdAt: Timestamp.now(),
                 updatedAt: Timestamp.now(),
+            });
+
+            // Create notification for the provider
+            await addDoc(collection(db, 'notifications'), {
+                userId: providerId,
+                type: 'new_request',
+                title: 'Nueva solicitud de servicio',
+                message: `${clientData.displayName} ha solicitado tu servicio: "${serviceTitle}"`,
+                link: `/requests`,
+                read: false,
+                createdAt: Timestamp.now()
             });
 
             toast({ title: '¡Solicitud enviada!', description: 'El proveedor ha sido notificado. Recibirás una respuesta pronto.' });

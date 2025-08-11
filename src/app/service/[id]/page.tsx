@@ -217,7 +217,7 @@ export default function ServiceDetail() {
 
   const handleReviewSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      if(!currentUser || !serviceId) {
+      if(!currentUser || !serviceId || !service) {
           toast({ variant: 'destructive', title: 'Error', description: 'Debes iniciar sesión para dejar una reseña.' });
           return;
       }
@@ -236,6 +236,19 @@ export default function ServiceDetail() {
               comment: reviewComment,
               createdAt: Timestamp.now()
           });
+
+          // Create notification for the provider
+          await addDoc(collection(db, 'notifications'), {
+            userId: service.userId,
+            type: 'new_review',
+            title: '¡Nueva reseña!',
+            message: `${currentUser.displayName} ha dejado una reseña de ${reviewRating} estrellas en tu servicio: "${service.title}".`,
+            link: `/service/${serviceId}`,
+            read: false,
+            createdAt: Timestamp.now()
+          });
+
+
           toast({ title: '¡Gracias!', description: 'Tu reseña ha sido publicada.' });
           setReviewComment("");
           setReviewRating(0);
