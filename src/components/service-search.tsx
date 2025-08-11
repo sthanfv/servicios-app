@@ -176,6 +176,36 @@ function FeaturedServiceCard({ service }: { service: Service }) {
   );
 }
 
+function NoveltyCard({ service }: { service: Service }) {
+  return (
+     <Link href={`/service/${service.id}`} className="group block">
+        <Card className="overflow-hidden h-full transform transition-all duration-300 group-hover:shadow-xl group-hover:-translate-y-1">
+            <div className="relative w-full aspect-[3/4]">
+                 {service.imageUrl ? (
+                    <Image
+                        src={service.imageUrl}
+                        alt={service.title}
+                        layout="fill"
+                        objectFit="cover"
+                        className="transition-transform duration-300 group-hover:scale-110"
+                        data-ai-hint="novelty service"
+                    />
+                 ) : (
+                    <div className="w-full h-full bg-muted flex items-center justify-center">
+                        <span className="text-xs text-muted-foreground text-center p-2">Sin imagen</span>
+                    </div>
+                 )}
+                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                 <div className="absolute bottom-0 left-0 right-0 p-3 text-white">
+                    <h3 className="font-bold text-sm line-clamp-2">{service.title}</h3>
+                    <Badge variant="secondary" className="mt-1 text-xs">{service.category}</Badge>
+                 </div>
+            </div>
+        </Card>
+     </Link>
+  )
+}
+
 export function ServiceSearch() {
   const {
     services,
@@ -258,3 +288,4 @@ export function ServiceSearch() {
 }
 
 ServiceSearch.FeaturedCard = FeaturedServiceCard;
+ServiceSearch.NoveltyCard = NoveltyCard;

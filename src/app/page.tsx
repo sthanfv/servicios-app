@@ -224,8 +224,8 @@ export default function Home() {
                     >
                     <CarouselContent>
                         {recentServices.map((service) => (
-                        <CarouselItem key={service.id} className="md:basis-1/2 lg:basis-1/4">
-                           <ServiceSearch.FeaturedCard service={service} />
+                        <CarouselItem key={service.id} className="basis-1/2 md:basis-1/3 lg:basis-1/5">
+                           <ServiceSearch.NoveltyCard service={service} />
                         </CarouselItem>
                         ))}
                     </CarouselContent>
@@ -370,5 +370,3 @@ export default function Home() {
     </div>
   );
 }
-
-    
