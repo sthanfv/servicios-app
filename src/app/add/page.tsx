@@ -189,7 +189,7 @@ export default function AddService() {
 
   return (
     <main className="container min-h-screen flex flex-col items-center justify-center py-10">
-       <Card className="w-full max-w-lg">
+       <Card className="w-full max-w-2xl">
           <CardHeader>
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
@@ -207,15 +207,15 @@ export default function AddService() {
           </CardHeader>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                  <FormField
                   control={form.control}
                   name="title"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Título</FormLabel>
+                      <FormLabel>Título del Servicio</FormLabel>
                       <FormControl>
-                        <Input placeholder="Ej: Fontanería de emergencia" {...field} disabled={isLoading} />
+                        <Input placeholder="Ej: Fontanería de emergencia 24/7" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -226,7 +226,7 @@ export default function AddService() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                       <div className="flex justify-between items-center">
+                       <div className="flex justify-between items-center mb-2">
                           <FormLabel>Descripción</FormLabel>
                           <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={generatingDesc || !form.getValues("title")}>
                               {generatingDesc ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
@@ -245,7 +245,7 @@ export default function AddService() {
                     </FormItem>
                   )}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="category"
@@ -285,7 +285,7 @@ export default function AddService() {
                     )}
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="city"
@@ -315,10 +315,10 @@ export default function AddService() {
                 </div>
                 <div className="space-y-2">
                   <FormLabel>Imagen del Servicio</FormLabel>
-                  <div className="flex items-center gap-4">
-                      <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground relative">
+                  <div className="flex items-center gap-4 p-4 border-2 border-dashed rounded-lg">
+                      <div className="w-24 h-24 border rounded-lg flex items-center justify-center text-muted-foreground relative overflow-hidden flex-shrink-0">
                           {preview ? (
-                              <Image src={preview} alt="Preview" fill objectFit="cover" className="rounded-lg"/>
+                              <Image src={preview} alt="Preview" fill style={{objectFit:"cover"}} className="rounded-lg"/>
                           ) : (
                               <Upload />
                           )}
@@ -328,24 +328,26 @@ export default function AddService() {
                               </div>
                           )}
                            {imageUrl && !imageUploading && (
-                              <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
+                              <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1 border-2 border-background">
                                   <CheckCircle className="h-4 w-4 text-white" />
                               </div>
                           )}
                       </div>
-                      <Input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="flex-1"
-                        disabled={isLoading}
-                      />
+                      <div className="flex-1">
+                        <Input
+                            id="image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageChange}
+                            disabled={isLoading}
+                        />
+                        <p className="text-xs text-muted-foreground mt-2">Sube una imagen clara que represente tu servicio.</p>
+                      </div>
                   </div>
                 </div>
               </CardContent>
               <CardFooter>
-                <Button type="submit" className="w-full" disabled={isLoading}>
+                <Button type="submit" size="lg" className="w-full" disabled={isLoading}>
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                   Guardar Servicio
                 </Button>
