@@ -521,3 +521,5 @@ export default function ServiceDetail() {
     </main>
   );
 }
+
+    
