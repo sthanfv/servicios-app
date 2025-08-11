@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, X, Phone, Robot } from 'lucide-react';
+import { MessageSquare, X, Phone, Bot } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { SupportChatbot } from './support-chatbot';
 import { Separator } from './ui/separator';

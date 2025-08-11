@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Robot, Loader2, Send } from "lucide-react"
+import { Bot, Loader2, Send } from "lucide-react"
 import { supportChat } from "@/ai/flows/support-chat-flow"
 import { useToast } from "@/hooks/use-toast"
 import { ScrollArea } from "./ui/scroll-area"
@@ -67,7 +67,7 @@ export function SupportChatbot() {
       <AlertDialogTrigger asChild>
         <button className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left">
            <div className="p-2 bg-muted rounded-full">
-                <Robot className="w-5 h-5 text-muted-foreground" />
+                <Bot className="w-5 h-5 text-muted-foreground" />
             </div>
             <div>
                 <p className="font-semibold">Pregúntale a Yani</p>
@@ -78,7 +78,7 @@ export function SupportChatbot() {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            <Robot /> Asistente Virtual Yani
+            <Bot /> Asistente Virtual Yani
           </AlertDialogTitle>
           <AlertDialogDescription>
             Haz una pregunta sobre ServiYa. Estoy aquí para ayudarte.
