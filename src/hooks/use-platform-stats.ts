@@ -15,9 +15,16 @@ interface UserGrowthData {
     users: number;
 }
 
+interface ServiceCategoryData {
+    name: string;
+    value: number;
+}
+
+
 export function usePlatformStats() {
   const [stats, setStats] = useState<PlatformStats>({ totalUsers: 0, totalServices: 0, totalHires: 0 });
   const [userGrowthData, setUserGrowthData] = useState<UserGrowthData[]>([]);
+  const [serviceCategoryData, setServiceCategoryData] = useState<ServiceCategoryData[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,11 +44,22 @@ export function usePlatformStats() {
         const usersQuery = query(collection(db, 'users'), orderBy('createdAt', 'asc'));
         const usersSnapshotPromise = getDocs(usersQuery);
 
-        const [userCountSnapshot, serviceCountSnapshot, hireCountSnapshot, usersSnapshot] = await Promise.all([
+        // Fetch all services for category chart
+        const servicesSnapshotPromise = getDocs(servicesCollection);
+
+
+        const [
+            userCountSnapshot, 
+            serviceCountSnapshot,
+            hireCountSnapshot,
+            usersSnapshot,
+            servicesSnapshot,
+        ] = await Promise.all([
             userCountPromise, 
             serviceCountPromise,
             hireCountPromise,
-            usersSnapshotPromise
+            usersSnapshotPromise,
+            servicesSnapshotPromise,
         ]);
         
         setStats({
@@ -73,6 +91,17 @@ export function usePlatformStats() {
 
         setUserGrowthData(sortedGrowthData);
 
+        // Process service category data
+        const categoryCounts = servicesSnapshot.docs.reduce((acc, doc) => {
+            const service = doc.data();
+            const category = service.category || 'Sin categoría';
+            acc[category] = (acc[category] || 0) + 1;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const categoryData = Object.entries(categoryCounts).map(([name, value]) => ({ name, value }));
+        setServiceCategoryData(categoryData);
+
 
       } catch (error) {
         console.error("Error fetching platform stats:", error);
@@ -84,5 +113,5 @@ export function usePlatformStats() {
     fetchStats();
   }, []);
 
-  return { stats, userGrowthData, loading };
+  return { stats, userGrowthData, serviceCategoryData, loading };
 }
