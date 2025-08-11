@@ -17,28 +17,27 @@ export default function AdminLayout({
 
   // This effect acts as a route guard.
   useEffect(() => {
-    // If loading is finished, check the user's role.
-    if (!loading) {
-      // If there's no user data or the role is not 'admin', redirect to home.
-      if (!userData || userData.role !== 'admin') {
-        router.replace('/');
-      }
+    // If loading is finished and the user is not an admin, redirect.
+    if (!loading && (!userData || userData.role !== 'admin')) {
+      router.replace('/');
     }
   }, [userData, loading, router]);
 
 
-  // While loading, or if the user is not an admin, show a loading screen.
+  // While loading, or if the user is not an admin yet (before redirect), show a loading screen.
   // This prevents flashing unauthorized content.
   if (loading || !userData || userData.role !== 'admin') {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
-        <p className="ml-4">Verificando acceso...</p>
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <div className="text-center">
+            <Loader2 className="h-12 w-12 mx-auto animate-spin text-primary" />
+            <p className="mt-4 text-muted-foreground">Verificando acceso de administrador...</p>
+        </div>
       </div>
     );
   }
   
-  // If the user is an admin, render the admin layout.
+  // If loading is complete and the user is an admin, render the admin layout.
   return (
     <SidebarProvider>
         <Sidebar>
