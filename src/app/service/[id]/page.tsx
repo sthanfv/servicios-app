@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, MessageSquare, Share2, Star, Heart } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageSquare, Share2, Star, Heart, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -23,6 +23,9 @@ interface Service {
   title: string;
   description: string;
   category: string;
+  price: number;
+  city: string;
+  zone?: string;
   imageUrl?: string;
   userId: string;
 }
@@ -291,7 +294,14 @@ export default function ServiceDetail() {
                     <div>
                     <Badge variant="secondary" className="mb-2">{service.category}</Badge>
                     <CardTitle className="text-3xl md:text-4xl font-bold">{service.title}</CardTitle>
+                    <div className="flex items-center text-muted-foreground text-sm gap-2 pt-2">
+                        <MapPin className="h-4 w-4" />
+                        <span>{service.city}{service.zone ? `, ${service.zone}` : ''}</span>
                     </div>
+                    </div>
+                     <span className="text-2xl font-bold text-primary">
+                        ${new Intl.NumberFormat('es-CO').format(service.price)}
+                    </span>
                 </div>
                 </CardHeader>
                 <CardContent>
@@ -409,3 +419,5 @@ export default function ServiceDetail() {
     </main>
   );
 }
+
+    
