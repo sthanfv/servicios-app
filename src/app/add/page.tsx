@@ -9,12 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, LogIn, CheckCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, Upload, LogIn, CheckCircle, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image';
 import { useAuthState } from "react-firebase-hooks/auth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProviderData } from "@/hooks/use-provider-data";
+import { suggestDescription } from "@/ai/flows/suggestion-flow";
 
 
 export default function AddService() {
@@ -30,6 +31,7 @@ export default function AddService() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
+  const [generatingDesc, setGeneratingDesc] = useState(false);
   const router = useRouter();
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -67,6 +69,31 @@ export default function AddService() {
       }
     }
   };
+
+  const handleGenerateDescription = async () => {
+    if (!title) {
+        toast({
+            variant: "destructive",
+            title: "Falta el título",
+            description: "Por favor, escribe un título para generar la descripción.",
+        });
+        return;
+    }
+    setGeneratingDesc(true);
+    try {
+        const result = await suggestDescription({ title });
+        setDescription(result);
+    } catch(e) {
+        console.error(e);
+        toast({
+            variant: "destructive",
+            title: "Error de IA",
+            description: "No se pudo generar la descripción. Revisa la consola para más detalles.",
+        });
+    } finally {
+        setGeneratingDesc(false);
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -188,14 +215,21 @@ export default function AddService() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="description">Descripción</Label>
+                 <div className="flex justify-between items-center">
+                    <Label htmlFor="description">Descripción</Label>
+                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={generatingDesc || !title}>
+                        {generatingDesc ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Sugerir con IA
+                    </Button>
+                </div>
                 <Textarea
                   id="description"
-                  placeholder="Describe tu servicio en detalle"
+                  placeholder="Describe tu servicio en detalle o usa la IA para generar una sugerencia."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  disabled={loading}
+                  disabled={loading || generatingDesc}
                   required
+                  rows={5}
                 />
               </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -284,7 +318,7 @@ export default function AddService() {
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={loading || imageUploading}>
+              <Button type="submit" className="w-full" disabled={loading || imageUploading || generatingDesc}>
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
                 Guardar Servicio
               </Button>
