@@ -1,7 +1,7 @@
-
-import { useState, useEffect } from 'react';
+'use client';
+import { useState, useEffect, useCallback } from 'react';
 import { db } from '@/services/firebase';
-import { collection, query, where, getDocs, orderBy, Query, DocumentData, limit } from 'firebase/firestore';
+import { collection, query, where, getDocs, orderBy, Query, DocumentData, limit, startAfter, QueryDocumentSnapshot } from 'firebase/firestore';
 import { useDebounce } from './use-debounce';
 
 export interface Service {
@@ -23,20 +23,23 @@ export function useServiceSearch() {
   const [services, setServices] = useState<Service[]>([]);
   const [recentServices, setRecentServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const SERVICES_PER_PAGE = 8;
 
+  // Effect for initial data and categories
   useEffect(() => {
     const fetchInitialData = async () => {
         setLoading(true);
         try {
-            // Fetch categories
             const servicesSnapshot = await getDocs(query(collection(db, "services")));
             const uniqueCategories = [...new Set(servicesSnapshot.docs.map(doc => doc.data().category as string))];
             setCategories(uniqueCategories);
 
-            // Fetch recent services for the carousel
             const recentQuery = query(collection(db, 'services'), orderBy('createdAt', 'desc'), limit(8));
             const recentSnapshot = await getDocs(recentQuery);
             const recentData = recentSnapshot.docs.map(doc => ({
@@ -47,31 +50,43 @@ export function useServiceSearch() {
 
         } catch (error) {
             console.error("Error fetching initial data:", error);
-        } finally {
-            setLoading(false);
         }
     };
     fetchInitialData();
   }, []);
 
-  useEffect(() => {
-    const fetchServices = async () => {
-      setLoading(true);
-      try {
+  const fetchServices = useCallback(async (isLoadMore = false) => {
+    if (isLoadMore) {
+        setLoadingMore(true);
+    } else {
+        setLoading(true);
+    }
+
+    try {
         let servicesQuery: Query<DocumentData> = collection(db, 'services');
 
         if (selectedCategory !== 'all') {
-          servicesQuery = query(servicesQuery, where('category', '==', selectedCategory));
+            servicesQuery = query(servicesQuery, where('category', '==', selectedCategory));
         }
+        
+        // The free-text search is applied client-side after fetching.
+        // This is a limitation of Firestore. For a more scalable solution, a dedicated search service like Algolia is recommended.
         
         servicesQuery = query(servicesQuery, orderBy('createdAt', 'desc'));
 
+        if (isLoadMore && lastDoc) {
+            servicesQuery = query(servicesQuery, startAfter(lastDoc));
+        }
+
+        servicesQuery = query(servicesQuery, limit(SERVICES_PER_PAGE));
+
         const querySnapshot = await getDocs(servicesQuery);
         let servicesData = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
+            id: doc.id,
+            ...doc.data(),
         } as Service));
         
+        // Client-side search filtering
         if (debouncedSearchTerm) {
             const lowercasedTerm = debouncedSearchTerm.toLowerCase();
             servicesData = servicesData.filter(service => 
@@ -80,22 +95,48 @@ export function useServiceSearch() {
             );
         }
 
-        setServices(servicesData);
-      } catch (error) {
+        const newLastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+        setLastDoc(newLastDoc);
+        setHasMore(querySnapshot.docs.length === SERVICES_PER_PAGE);
+
+        if (isLoadMore) {
+            setServices(prev => [...prev, ...servicesData]);
+        } else {
+            setServices(servicesData);
+        }
+
+    } catch (error) {
         console.error("Error searching services:", error);
         setServices([]);
-      } finally {
+    } finally {
         setLoading(false);
-      }
-    };
+        setLoadingMore(false);
+    }
+  }, [selectedCategory, debouncedSearchTerm, lastDoc]);
 
-    fetchServices();
-  }, [debouncedSearchTerm, selectedCategory]);
+  // Effect to refetch services when filters change
+  useEffect(() => {
+    // Reset pagination state before fetching
+    setLastDoc(null);
+    setHasMore(true);
+    // We pass false to `fetchServices` to indicate it's a new search, not loading more
+    fetchServices(false);
+  }, [debouncedSearchTerm, selectedCategory]); // Removed fetchServices from dependency array
+
+  const fetchMore = () => {
+      if(hasMore && !loadingMore) {
+          fetchServices(true);
+      }
+  }
+
 
   return { 
     services, 
     recentServices,
     loading, 
+    loadingMore,
+    hasMore,
+    fetchMore,
     searchTerm, 
     setSearchTerm, 
     selectedCategory, 
@@ -103,5 +144,3 @@ export function useServiceSearch() {
     categories 
   };
 }
-
-    

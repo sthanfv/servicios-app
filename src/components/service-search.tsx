@@ -140,6 +140,9 @@ export function ServiceSearch() {
     selectedCategory,
     setSelectedCategory,
     categories,
+    hasMore,
+    fetchMore,
+    loadingMore,
   } = useServiceSearch();
 
   return (
@@ -183,16 +186,26 @@ export function ServiceSearch() {
           </p>
         </div>
       ) : (
-        <motion.div 
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-            variants={gridContainerVariants}
-            initial="hidden"
-            animate="visible"
-        >
-          {services.map((service) => (
-            <ServiceCard key={service.id} service={service} />
-          ))}
-        </motion.div>
+        <>
+            <motion.div 
+                className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                variants={gridContainerVariants}
+                initial="hidden"
+                animate="visible"
+            >
+            {services.map((service) => (
+                <ServiceCard key={service.id} service={service} />
+            ))}
+            </motion.div>
+            {hasMore && (
+                <div className="flex justify-center mt-8">
+                    <Button onClick={fetchMore} disabled={loadingMore}>
+                        {loadingMore ? <Loader2 className="mr-2 animate-spin" /> : null}
+                        Cargar más
+                    </Button>
+                </div>
+            )}
+        </>
       )}
     </>
   );
