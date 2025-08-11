@@ -222,7 +222,7 @@ export default function MyServices() {
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {services.map(service => (
             <Card key={service.id} className="h-full flex flex-col overflow-hidden">
-                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-xl">
+                <div className="relative w-full aspect-[4/3] overflow-hidden rounded-t-lg">
                   {service.imageUrl ? (
                       <Image
                       src={service.imageUrl}
@@ -246,20 +246,17 @@ export default function MyServices() {
                     <Badge variant="secondary">{service.category}</Badge>
                     <div className="flex gap-2">
                         <Button variant="outline" size="icon" asChild>
-                            <Link href={`/service/${service.id}`}>
+                            <Link href={`/service/${service.id}`} aria-label={`Ver servicio ${service.title}`}>
                                 <ArrowRight className="h-4 w-4" />
-                                <span className="sr-only">Ver</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" size="icon" onClick={() => router.push(`/edit-service/${service.id}`)}>
+                        <Button variant="outline" size="icon" onClick={() => router.push(`/edit-service/${service.id}`)} aria-label={`Editar servicio ${service.title}`}>
                             <Edit className="h-4 w-4" />
-                            <span className="sr-only">Editar</span>
                         </Button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                                <Button variant="destructive" size="icon" disabled={isDeleting === service.id}>
+                                <Button variant="destructive" size="icon" disabled={isDeleting === service.id} aria-label={`Eliminar servicio ${service.title}`}>
                                     {isDeleting === service.id ? <Loader2 className="h-4 w-4 animate-spin"/> : <Trash2 className="h-4 w-4" />}
-                                    <span className="sr-only">Eliminar</span>
                                 </Button>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
