@@ -270,7 +270,7 @@ export default function ChatPage() {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {messages.map((msg) => (
+                                    {user && messages.map((msg) => (
                                         <div key={msg.id} className={`flex ${msg.senderId === user.uid ? 'justify-end' : 'justify-start'}`}>
                                             <div className={`p-3 rounded-lg max-w-xs lg:max-w-md ${msg.senderId === user.uid ? 'bg-primary text-primary-foreground' : 'bg-card border'}`}>
                                                 <p>{msg.text}</p>

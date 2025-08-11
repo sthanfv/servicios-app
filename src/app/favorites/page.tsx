@@ -4,7 +4,7 @@ import { db, auth } from '@/services/firebase';
 import { collection, doc, getDoc, query, where, onSnapshot } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { useUserData } from '@/hooks/use-user-data';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -41,7 +41,7 @@ export default function FavoritesPage() {
     if (userData.favoriteServices && userData.favoriteServices.length > 0) {
       const fetchServices = async () => {
           try {
-            const servicesPromises = userData.favoriteServices.map(id => getDoc(doc(db, 'services', id)));
+            const servicesPromises = userData.favoriteServices?.map(id => getDoc(doc(db, 'services', id))) || [];
             const serviceDocs = await Promise.all(servicesPromises);
             const servicesData = serviceDocs
                 .filter(docSnap => docSnap.exists())

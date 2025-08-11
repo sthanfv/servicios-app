@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { auth, db } from '@/services/firebase';
-import { doc, onSnapshot, DocumentData } from 'firebase/firestore';
+import { doc, onSnapshot, DocumentData, Unsubscribe } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 
 interface UserData {
@@ -20,7 +20,7 @@ export function useUserData() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    let unsubscribe;
+    let unsubscribe: Unsubscribe | undefined;
     if (user) {
       const userRef = doc(db, 'users', user.uid);
       unsubscribe = onSnapshot(userRef, (docSnap) => {

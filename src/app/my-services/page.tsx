@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Edit, Trash2, PlusCircle, LogIn, Loader2, Star, MessageSquare, Briefcase } from 'lucide-react';
+import { ArrowLeft, Edit, Trash2, PlusCircle, LogIn, Loader2, Star, MessageSquare, Briefcase, ArrowRight } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 
@@ -46,7 +46,7 @@ export default function MyServices() {
     if (!user) {
       // If no user, redirect to login and stop loading.
       setLoading(false);
-      router.push('/login');
+      // router.push('/login'); // This is handled by the main return
       return;
     }
     
@@ -103,7 +103,7 @@ export default function MyServices() {
     });
     
     return () => unsubscribe();
-  }, [user, authLoading, toast, router]);
+  }, [user, authLoading, toast]);
 
   const handleDelete = async (serviceId: string, imageUrl?: string) => {
     setIsDeleting(serviceId);
@@ -252,7 +252,7 @@ export default function MyServices() {
                     <div className="flex gap-2">
                         <Button variant="outline" size="icon" asChild>
                             <Link href={`/service/${service.id}`}>
-                                <ArrowLeft className="h-4 w-4 rotate-180" />
+                                <ArrowRight className="h-4 w-4" />
                                 <span className="sr-only">Ver</span>
                             </Link>
                         </Button>
