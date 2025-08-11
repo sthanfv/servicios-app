@@ -74,6 +74,7 @@ export default function AddService() {
         const data = await res.json();
         setImageUrl(data.url);
         toast({
+            variant: "success",
             title: "¡Éxito!",
             description: "Imagen subida correctamente.",
         });
@@ -144,6 +145,7 @@ export default function AddService() {
       setImageUrl(null);
       setPreview(null);
       toast({
+        variant: "success",
         title: "¡Éxito!",
         description: "Servicio agregado correctamente.",
       });

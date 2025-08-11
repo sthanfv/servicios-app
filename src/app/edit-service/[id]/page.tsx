@@ -144,7 +144,7 @@ export default function EditService() {
         providerImage: providerData.photoURL,
         providerVerified: providerData.verified || false,
       });
-      toast({ title: '¡Éxito!', description: 'Servicio actualizado correctamente.' });
+      toast({ variant: 'success', title: '¡Éxito!', description: 'Servicio actualizado correctamente.' });
       router.push('/my-services');
     } catch (error) {
       console.error(error);
@@ -289,5 +289,3 @@ export default function EditService() {
     </main>
   );
 }
-
-    

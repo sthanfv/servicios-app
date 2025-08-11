@@ -110,6 +110,7 @@ export default function MyServices() {
       }
       await deleteDoc(doc(db, 'services', serviceId));
       toast({
+        variant: 'success',
         title: 'Éxito',
         description: 'Servicio eliminado correctamente.',
       });
