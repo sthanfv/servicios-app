@@ -85,5 +85,3 @@ export function useNotifications() {
 
   return { notifications, unreadCount, markAsRead, markAllAsRead, loading };
 }
-
-    
