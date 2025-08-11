@@ -325,7 +325,7 @@ export default function ServiceDetail() {
         <div className='flex gap-2'>
             {currentUser && !isOwner && <FavoriteButton serviceId={serviceId} />}
             <Button variant="outline" onClick={handleShare}>
-                <Share2 className="mr-2" />
+                <Share2 className="mr-2 h-4 w-4" />
                 Compartir
             </Button>
         </div>
@@ -503,7 +503,7 @@ export default function ServiceDetail() {
                         <Button disabled className="w-full">Es tu servicio</Button>
                     ) : (
                         <Button onClick={handleHire} className="w-full">
-                            <Briefcase className="mr-2" />
+                            <Briefcase className="mr-2 h-4 w-4" />
                             Contratar Servicio
                         </Button>
                     )}

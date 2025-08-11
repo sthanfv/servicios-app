@@ -66,8 +66,12 @@ function UserMenu() {
                   </div>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                 <DropdownMenuItem onSelect={() => router.push('/my-services')}>
+                 <DropdownMenuItem onSelect={() => router.push(`/profile/${user.uid}`)}>
                   <User className="mr-2 h-4 w-4" />
+                  <span>Mi Perfil</span>
+                </DropdownMenuItem>
+                 <DropdownMenuItem onSelect={() => router.push('/my-services')}>
+                  <Briefcase className="mr-2 h-4 w-4" />
                   <span>Mis Servicios</span>
                 </DropdownMenuItem>
                  <DropdownMenuItem onSelect={() => router.push('/requests')}>

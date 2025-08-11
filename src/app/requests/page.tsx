@@ -199,7 +199,7 @@ export default function RequestsPage() {
                         <Button onClick={() => handleUpdateStatus(req, 'completed')}>Marcar como Completada</Button>
                      )}
                      <Button variant="outline" asChild>
-                        <Link href={`/chat?contact=${req.clientId}`}><MessageSquare className="mr-2"/>Contactar</Link>
+                        <Link href={`/chat?contact=${req.clientId}`}><MessageSquare className="mr-2 h-4 w-4"/>Contactar</Link>
                      </Button>
                      <Button variant="secondary" asChild>
                         <Link href={`/service/${req.serviceId}`}>Ver Servicio</Link>

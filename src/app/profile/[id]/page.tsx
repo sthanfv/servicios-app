@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { doc, getDoc, collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { db } from '@/services/firebase';
+import { db, auth } from '@/services/firebase';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import { ArrowLeft, Loader2, MessageSquare, Share2, User as UserIcon, ShieldChec
 import { useToast } from '@/hooks/use-toast';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 
 interface Service {
@@ -36,6 +37,7 @@ export default function ProfilePage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
+  const [currentUser] = useAuthState(auth);
   const userId = params.id as string;
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -87,6 +89,11 @@ export default function ProfilePage() {
   };
   
    const handleContact = () => {
+    if (!currentUser) {
+        toast({ variant: 'destructive', title: 'Acción requerida', description: 'Debes iniciar sesión para contactar a un proveedor.' });
+        router.push('/login');
+        return;
+    }
     router.push(`/chat?contact=${userId}`);
   };
 
@@ -103,6 +110,8 @@ export default function ProfilePage() {
     return null; // Should be redirected if profile is not found
   }
 
+  const isOwnProfile = currentUser?.uid === userId;
+
   return (
     <main className="container py-10">
       <div className="flex justify-between items-center mb-8">
@@ -111,7 +120,7 @@ export default function ProfilePage() {
         </Button>
         <div className="flex gap-2">
             <Button variant="outline" onClick={handleShare}>
-                <Share2 className="mr-2" />
+                <Share2 className="mr-2 h-4 w-4" />
                 Compartir Perfil
             </Button>
         </div>
@@ -148,10 +157,12 @@ export default function ProfilePage() {
               <span>⭐️ Aún sin calificación</span>
             </div>
           </div>
-          <Button size="lg" onClick={handleContact}>
-            <MessageSquare className="mr-2" />
-            Contactar
-          </Button>
+          {!isOwnProfile && (
+            <Button size="lg" onClick={handleContact}>
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Contactar
+            </Button>
+          )}
         </CardContent>
       </Card>
 
