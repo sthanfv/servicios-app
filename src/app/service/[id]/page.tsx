@@ -65,17 +65,12 @@ function FavoriteButton({ serviceId }: { serviceId: string }) {
 
     return (
         <Button variant="outline" size="icon" onClick={toggleFavorite} aria-label="Toggle Favorite">
-             <AnimatePresence>
-                <motion.div
-                    key={isFavorited ? 'favorited' : 'not-favorited'}
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.5, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    <Heart className={`transition-colors ${isFavorited ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
-                </motion.div>
-            </AnimatePresence>
+            <motion.div
+                whileTap={{ scale: 0.9 }}
+                transition={{ type: "spring", stiffness: 400, damping: 17 }}
+            >
+                <Heart className={`transition-colors ${isFavorited ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+            </motion.div>
         </Button>
     )
 }

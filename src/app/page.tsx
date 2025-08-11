@@ -238,27 +238,45 @@ export default function Home() {
         {/* Benefits Section */}
         <section className="py-16">
             <div className="container grid md:grid-cols-3 gap-8 text-center">
-                <div className="flex flex-col items-center gap-4">
+                 <motion.div 
+                    className="flex flex-col items-center gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                >
                     <div className="bg-primary/10 p-3 rounded-full">
                         <Megaphone className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-xl font-bold">Publica Fácilmente</h3>
                     <p className="text-muted-foreground">Crea una publicación para tu servicio en menos de 5 minutos y llega a nuevos clientes.</p>
-                </div>
-                 <div className="flex flex-col items-center gap-4">
+                </motion.div>
+                 <motion.div 
+                    className="flex flex-col items-center gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                >
                     <div className="bg-primary/10 p-3 rounded-full">
                         <Users className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-xl font-bold">Conecta Directo</h3>
                     <p className="text-muted-foreground">Comunícate directamente con los proveedores o clientes a través de nuestro chat integrado.</p>
-                </div>
-                 <div className="flex flex-col items-center gap-4">
+                </motion.div>
+                 <motion.div 
+                    className="flex flex-col items-center gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.5, delay: 0.3 }}
+                >
                     <div className="bg-primary/10 p-3 rounded-full">
                         <MapPin className="h-8 w-8 text-primary" />
                     </div>
                     <h3 className="text-xl font-bold">Explora Local</h3>
                     <p className="text-muted-foreground">Encuentra los mejores profesionales y servicios disponibles cerca de ti.</p>
-                </div>
+                </motion.div>
             </div>
         </section>
 
