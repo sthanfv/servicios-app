@@ -2,7 +2,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { db, auth } from '@/services/firebase';
-import { collection, query, where, onSnapshot, deleteDoc, doc, orderBy, getDocs } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, deleteDoc, doc, orderBy } from 'firebase/firestore';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,8 @@ interface Service {
   description: string;
   category: string;
   imageUrl?: string;
+  reviewCount: number;
+  averageRating: number;
 }
 
 interface Stats {
@@ -39,18 +41,14 @@ export default function MyServices() {
 
   useEffect(() => {
     if (authLoading) {
-      // Still checking for user auth state, do nothing yet.
       return;
     }
     
     if (!user) {
-      // If no user, redirect to login and stop loading.
       setLoading(false);
-      // router.push('/login'); // This is handled by the main return
       return;
     }
     
-    // If user is authenticated, start fetching data.
     setLoading(true);
     const q = query(
       collection(db, 'services'),
@@ -62,34 +60,27 @@ export default function MyServices() {
       const servicesData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Service));
       setServices(servicesData);
       
-      // Calculate stats
+      // Calculate stats from denormalized data
       let totalReviews = 0;
-      let totalRating = 0;
+      let totalRatingSum = 0;
       let servicesWithRatings = 0;
 
-      for (const service of servicesData) {
-          const reviewsQuery = query(collection(db, 'services', service.id, 'reviews'));
-          const reviewsSnapshot = await getDocs(reviewsQuery);
-          const reviewsCount = reviewsSnapshot.size;
-          totalReviews += reviewsCount;
-
-          if (reviewsCount > 0) {
-              let serviceRatingSum = 0;
-              reviewsSnapshot.forEach(doc => {
-                  serviceRatingSum += doc.data().rating;
-              });
-              totalRating += serviceRatingSum / reviewsCount;
-              servicesWithRatings++;
-          }
-      }
+      servicesData.forEach(service => {
+        totalReviews += service.reviewCount || 0;
+        if ((service.reviewCount || 0) > 0) {
+            totalRatingSum += (service.averageRating || 0) * (service.reviewCount || 0);
+            servicesWithRatings += service.reviewCount || 0;
+        }
+      });
+      
+      const overallAverageRating = servicesWithRatings > 0 ? totalRatingSum / servicesWithRatings : 0;
       
       setStats({
           totalServices: servicesData.length,
           totalReviews: totalReviews,
-          averageRating: servicesWithRatings > 0 ? parseFloat((totalRating / servicesWithRatings).toFixed(1)) : 0
+          averageRating: parseFloat(overallAverageRating.toFixed(1))
       });
 
-      // Data is fetched and processed, stop loading.
       setLoading(false);
 
     }, (error) => {
@@ -235,7 +226,7 @@ export default function MyServices() {
                       <Image
                       src={service.imageUrl}
                       alt={service.title}
-                      layout="fill"
+                      fill
                       objectFit="cover"
                       />
                   ) : (

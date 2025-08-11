@@ -20,6 +20,8 @@ export interface Service {
   providerVerified?: boolean;
 }
 
+const SERVICES_PER_PAGE = 8;
+
 export function useServiceSearch() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -32,7 +34,6 @@ export function useServiceSearch() {
   const [categories, setCategories] = useState<string[]>([]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const SERVICES_PER_PAGE = 8;
 
   // Effect for initial data and categories
   useEffect(() => {
@@ -63,6 +64,7 @@ export function useServiceSearch() {
         setLoadingMore(true);
     } else {
         setLoading(true);
+        setLastDoc(null); // Reset pagination on new search
     }
 
     try {
@@ -72,8 +74,8 @@ export function useServiceSearch() {
             servicesQuery = query(servicesQuery, where('category', '==', selectedCategory));
         }
         
-        // The free-text search is applied client-side after fetching.
-        // This is a limitation of Firestore. For a more scalable solution, a dedicated search service like Algolia is recommended.
+        // Firestore limitation: cannot use inequality filters (like searching for a substring) on a different field than the first orderBy.
+        // We will filter by search term client-side after fetching.
         
         servicesQuery = query(servicesQuery, orderBy('createdAt', 'desc'));
 
@@ -94,7 +96,8 @@ export function useServiceSearch() {
             const lowercasedTerm = debouncedSearchTerm.toLowerCase();
             servicesData = servicesData.filter(service => 
               service.title.toLowerCase().includes(lowercasedTerm) ||
-              service.description.toLowerCase().includes(lowercasedTerm)
+              service.description.toLowerCase().includes(lowercasedTerm) ||
+              service.providerName.toLowerCase().includes(lowercasedTerm)
             );
         }
 
@@ -119,12 +122,8 @@ export function useServiceSearch() {
 
   // Effect to refetch services when filters change
   useEffect(() => {
-    // Reset pagination state before fetching
-    setLastDoc(null);
-    setHasMore(true);
-    // We pass false to `fetchServices` to indicate it's a new search, not loading more
     fetchServices(false);
-  }, [debouncedSearchTerm, selectedCategory]); // Removed fetchServices from dependency array
+  }, [debouncedSearchTerm, selectedCategory, fetchServices]);
 
   const fetchMore = () => {
       if(hasMore && !loadingMore) {

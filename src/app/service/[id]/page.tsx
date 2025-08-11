@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { doc, getDoc, collection, query, onSnapshot, addDoc, Timestamp, orderBy } from 'firebase/firestore';
+import { doc, getDoc, collection, query, onSnapshot, addDoc, Timestamp, orderBy, runTransaction, increment, writeBatch } from 'firebase/firestore';
 import { db, auth } from '@/services/firebase';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,8 @@ interface Service {
   imageUrl?: string;
   userId: string;
   providerVerified?: boolean;
+  reviewCount?: number;
+  averageRating?: number;
 }
 
 interface UserProfile {
@@ -95,6 +97,7 @@ export default function ServiceDetail() {
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
   const [hiringModalOpen, setHiringModalOpen] = useState(false);
+  const [reviewDistribution, setReviewDistribution] = useState([0, 0, 0, 0, 0]);
 
 
   useEffect(() => {
@@ -152,7 +155,7 @@ export default function ServiceDetail() {
     fetchServiceAndProvider();
   }, [serviceId, router, toast]);
 
-  // Effect for fetching reviews
+  // Effect for fetching reviews and distribution
   useEffect(() => {
       if(!serviceId) return;
 
@@ -161,7 +164,11 @@ export default function ServiceDetail() {
           const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Review));
           setReviews(reviewsData);
 
-          // Check if current user has already reviewed
+          const distribution = [5, 4, 3, 2, 1].map(
+            (stars) => reviewsData.filter((r) => r.rating === stars).length
+          );
+          setReviewDistribution(distribution);
+
           if(currentUser) {
               const userReview = reviewsData.find(r => r.userId === currentUser.uid);
               setHasReviewed(!!userReview);
@@ -171,23 +178,6 @@ export default function ServiceDetail() {
       return () => unsubscribe();
 
   }, [serviceId, currentUser]);
-
-  const reviewStats = useMemo(() => {
-    if (reviews.length === 0) {
-      return {
-        average: 0,
-        total: 0,
-        distribution: [0, 0, 0, 0, 0],
-      };
-    }
-    const total = reviews.length;
-    const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-    const average = parseFloat((sum / total).toFixed(1));
-    const distribution = [5, 4, 3, 2, 1].map(
-      (stars) => reviews.filter((r) => r.rating === stars).length
-    );
-    return { average, total, distribution };
-  }, [reviews]);
 
 
   const copyToClipboard = () => {
@@ -252,24 +242,50 @@ export default function ServiceDetail() {
 
       setIsSubmittingReview(true);
       try {
-          await addDoc(collection(db, `services/${serviceId}/reviews`), {
-              userId: currentUser.uid,
-              userName: currentUser.displayName,
-              userAvatar: currentUser.photoURL,
-              rating: reviewRating,
-              comment: reviewComment,
-              createdAt: Timestamp.now()
-          });
+          const serviceRef = doc(db, 'services', serviceId);
+          const reviewRef = doc(collection(db, `services/${serviceId}/reviews`));
+          const notificationRef = doc(collection(db, 'notifications'));
 
-          // Create notification for the provider
-          await addDoc(collection(db, 'notifications'), {
-            userId: service.userId,
-            type: 'new_review',
-            title: '¡Nueva reseña!',
-            message: `${currentUser.displayName} ha dejado una reseña de ${reviewRating} estrellas en tu servicio: "${service.title}".`,
-            link: `/service/${serviceId}`,
-            read: false,
-            createdAt: Timestamp.now()
+          await runTransaction(db, async (transaction) => {
+             const serviceDoc = await transaction.get(serviceRef);
+             if (!serviceDoc.exists()) {
+                 throw new Error("El servicio no existe");
+             }
+
+             const currentData = serviceDoc.data();
+             const currentReviewCount = currentData.reviewCount || 0;
+             const currentAverageRating = currentData.averageRating || 0;
+
+             const newReviewCount = currentReviewCount + 1;
+             const newAverageRating = ((currentAverageRating * currentReviewCount) + reviewRating) / newReviewCount;
+
+             // 1. Update service document with new stats
+             transaction.update(serviceRef, {
+                 reviewCount: newReviewCount,
+                 averageRating: newAverageRating
+             });
+
+             // 2. Add the new review
+             transaction.set(reviewRef, {
+                userId: currentUser.uid,
+                userName: currentUser.displayName,
+                userAvatar: currentUser.photoURL,
+                rating: reviewRating,
+                comment: reviewComment,
+                createdAt: Timestamp.now()
+             });
+
+            // 3. Create notification for the provider
+            transaction.set(notificationRef, {
+                userId: service.userId,
+                type: 'new_review',
+                title: '¡Nueva reseña!',
+                message: `${currentUser.displayName} ha dejado una reseña de ${reviewRating} estrellas en tu servicio: "${service.title}".`,
+                link: `/service/${serviceId}`,
+                read: false,
+                createdAt: Timestamp.now()
+            });
+
           });
 
 
@@ -323,7 +339,7 @@ export default function ServiceDetail() {
                         <Image
                             src={service.imageUrl}
                             alt={service.title}
-                            layout="fill"
+                            fill
                             objectFit="cover"
                         />
                     </div>
@@ -355,24 +371,24 @@ export default function ServiceDetail() {
             <Card>
                 <CardHeader>
                     <CardTitle>Reseñas y Calificaciones</CardTitle>
-                    {reviewStats.total > 0 && (
+                    {(service.reviewCount || 0) > 0 && (
                         <div className="flex items-center gap-2 pt-2">
                             <div className="flex items-center">
                                 {[1, 2, 3, 4, 5].map((star) => (
-                                    <Star key={star} className={`h-5 w-5 ${reviewStats.average >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
+                                    <Star key={star} className={`h-5 w-5 ${(service.averageRating || 0) >= star ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground'}`} />
                                 ))}
                             </div>
-                            <span className="font-bold text-lg">{reviewStats.average}</span>
-                            <span className="text-muted-foreground text-sm">({reviewStats.total} reseñas)</span>
+                            <span className="font-bold text-lg">{service.averageRating?.toFixed(1)}</span>
+                            <span className="text-muted-foreground text-sm">({service.reviewCount} reseñas)</span>
                         </div>
                     )}
                 </CardHeader>
                 <CardContent>
-                     {reviewStats.total > 0 && (
+                     {(service.reviewCount || 0) > 0 && (
                        <div className="space-y-2 mb-8">
-                           {reviewStats.distribution.map((count, index) => {
+                           {reviewDistribution.map((count, index) => {
                                const stars = 5 - index;
-                               const percentage = reviewStats.total > 0 ? (count / reviewStats.total) * 100 : 0;
+                               const percentage = (service.reviewCount || 0) > 0 ? (count / (service.reviewCount || 1)) * 100 : 0;
                                return (
                                    <div key={stars} className="flex items-center gap-2 text-sm">
                                        <span className="w-16">{stars} estrellas</span>

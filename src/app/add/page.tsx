@@ -130,6 +130,9 @@ export default function AddService() {
         providerImage: providerData.photoURL,
         providerVerified: providerData.verified || false,
         createdAt: Timestamp.now(),
+        // Denormalized fields for reviews
+        reviewCount: 0,
+        averageRating: 0,
       });
       setTitle("");
       setDescription("");
@@ -291,7 +294,7 @@ export default function AddService() {
                 <div className="flex items-center gap-4">
                     <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground relative">
                         {preview ? (
-                            <Image src={preview} alt="Preview" layout="fill" objectFit="cover" className="rounded-lg"/>
+                            <Image src={preview} alt="Preview" fill objectFit="cover" className="rounded-lg"/>
                         ) : (
                             <Upload />
                         )}
