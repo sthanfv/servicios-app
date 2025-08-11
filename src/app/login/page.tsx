@@ -11,7 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -53,8 +53,10 @@ export default function Login() {
       description: "¡Bienvenido de vuelta!",
     });
     
-    const finalUserDoc = await getDoc(userDocRef); // Re-fetch to get merged data if needed
-    if (finalUserDoc.exists() && finalUserDoc.data()?.role === 'admin') {
+    const finalUserDoc = await getDoc(userDocRef);
+    const userData = finalUserDoc.data();
+
+    if (userData && userData.role === 'admin') {
       router.push('/admin');
     } else {
       router.push('/');
@@ -78,13 +80,13 @@ export default function Login() {
         title: "Error de inicio de sesión",
         description: "Las credenciales son incorrectas o ha ocurrido un error. Por favor, inténtelo de nuevo.",
       });
-    } finally {
       setLoading(false);
     }
   };
 
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!email || !password) return;
     handleLogin('email');
   };
 
@@ -143,7 +145,7 @@ export default function Login() {
               className="w-full"
               disabled={loading}
             >
-              {loading && !password ? 'Redirigiendo...' : loading ? 'Iniciando sesión...' : 'Entrar con correo'}
+              {loading ? <Loader2 className="animate-spin" /> : 'Entrar con correo'}
             </Button>
             
             <div className="relative w-full">
