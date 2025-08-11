@@ -163,18 +163,18 @@ export function ServiceSearch() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-8 max-w-2xl mx-auto">
+      <div className="flex items-center gap-2 mb-8 max-w-3xl mx-auto bg-card p-2 rounded-xl shadow-lg border">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Buscar por título, descripción..."
-            className="pl-10 h-12 text-base"
+            placeholder="¿Qué servicio necesitas?"
+            className="pl-10 h-12 text-base bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full md:w-[240px] h-12 text-base">
+          <SelectTrigger className="w-full md:w-[240px] h-12 text-base bg-muted border-none hover:bg-muted/80">
             <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent>
@@ -186,6 +186,7 @@ export function ServiceSearch() {
             ))}
           </SelectContent>
         </Select>
+        <Button size="lg" className="h-12 hidden md:inline-flex">Buscar</Button>
       </div>
 
       {loading ? (
