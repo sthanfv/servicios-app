@@ -156,7 +156,7 @@ export default function Home() {
         <Link href="/" className="flex items-center gap-2">
           <Briefcase className="h-8 w-8 text-primary" />
           <h1 className="text-xl font-bold">
-            ServiciosApp Lite
+            ServiYa
           </h1>
         </Link>
         <nav className="flex items-center gap-4">
@@ -173,7 +173,7 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
             >
-                La forma simple de conectar servicios
+                Encuentra lo que necesitas, ahora.
             </motion.h1>
             <motion.p 
               className="max-w-2xl mx-auto text-lg text-muted-foreground mb-8"
@@ -342,7 +342,7 @@ export default function Home() {
       </main>
       <footer className="w-full border-t border-border/50 bg-card">
         <div className="container text-center py-6 text-muted-foreground">
-          <p>&copy; {new Date().getFullYear()} ServiciosApp Lite. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} ServiYa. Todos los derechos reservados.</p>
         </div>
       </footer>
     </div>

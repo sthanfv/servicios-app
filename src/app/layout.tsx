@@ -13,19 +13,19 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | ServiciosApp Lite',
-    default: 'ServiciosApp Lite - Tu plataforma para encontrar y ofrecer servicios locales',
+    template: '%s | ServiYa',
+    default: 'ServiYa - Encuentra lo que necesitas, ahora.',
   },
-  description: 'Tu plataforma minimalista para encontrar y ofrecer servicios locales.',
+  description: 'Encuentra lo que necesitas, ahora.',
   openGraph: {
-    title: 'ServiciosApp Lite',
-    description: 'Tu plataforma minimalista para encontrar y ofrecer servicios locales.',
+    title: 'ServiYa',
+    description: 'Encuentra lo que necesitas, ahora.',
     images: ['/og-image.png']
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ServiciosApp Lite',
-    description: 'Tu plataforma minimalista para encontrar y ofrecer servicios locales.',
+    title: 'ServiYa',
+    description: 'Encuentra lo que necesitas, ahora.',
     images: ['/og-image.png']
   }
 };

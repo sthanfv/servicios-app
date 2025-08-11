@@ -1,5 +1,5 @@
 
-# ServiciosApp Lite: Informe Detallado del Proyecto
+# ServiYa: Informe Detallado del Proyecto
 
 _Fecha: 24 de mayo de 2024_
 
@@ -7,7 +7,7 @@ _Fecha: 24 de mayo de 2024_
 
 ### **1. Resumen Ejecutivo**
 
-**ServiciosApp Lite** es una plataforma web moderna diseñada para actuar como un mercado digital donde profesionales y proveedores de servicios locales pueden conectar con clientes potenciales. El proyecto se ha desarrollado como un prototipo funcional avanzado, implementando las características esenciales de una aplicación de este tipo, con un enfoque en la calidad del código, la experiencia de usuario y la escalabilidad.
+**ServiYa** es una plataforma web moderna diseñada para actuar como un mercado digital donde profesionales y proveedores de servicios locales pueden conectar con clientes potenciales. El proyecto se ha desarrollado como un prototipo funcional avanzado, implementando las características esenciales de una aplicación de este tipo, con un enfoque en la calidad del código, la experiencia de usuario y la escalabilidad.
 
 El estado actual de la aplicación es un **MVP (Producto Mínimo Viable) robusto**. La plataforma permite a los usuarios registrarse, publicar servicios con imágenes, buscar y filtrar servicios, contactar a proveedores a través de un chat en tiempo real y guardar servicios favoritos. Además, incluye un panel de administración básico para la supervisión de la plataforma.
 
@@ -100,4 +100,4 @@ Aunque el prototipo es robusto, existen múltiples oportunidades de mejora y exp
 
 ---
 
-Este informe refleja el estado sólido y prometedor de **ServiciosApp Lite**. El equipo ha hecho un excelente trabajo sentando las bases de una plataforma escalable y centrada en el usuario. ¡Felicidades!
+Este informe refleja el estado sólido y prometedor de **ServiYa**. El equipo ha hecho un excelente trabajo sentando las bases de una plataforma escalable y centrada en el usuario. ¡Felicidades!
