@@ -9,7 +9,7 @@ import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Loader2, MessageSquare, Share2, Star, Heart, MapPin } from 'lucide-react';
+import { ArrowLeft, Loader2, MessageSquare, Share2, Star, Heart, MapPin, Briefcase } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label';
 import { useFavorites } from '@/hooks/use-favorites';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { HiringModal } from '@/components/hiring-modal';
 
 interface Service {
   title: string;
@@ -89,6 +90,7 @@ export default function ServiceDetail() {
   const [reviewRating, setReviewRating] = useState(0);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [hiringModalOpen, setHiringModalOpen] = useState(false);
 
 
   useEffect(() => {
@@ -193,24 +195,24 @@ export default function ServiceDetail() {
     }
   };
 
-  const handleContact = () => {
+  const handleHire = () => {
     if (!currentUser) {
         toast({
             variant: 'destructive',
             title: 'Acción requerida',
-            description: 'Debes iniciar sesión para contactar al proveedor.',
+            description: 'Debes iniciar sesión para contratar un servicio.',
         });
         router.push('/login');
         return;
     }
-    if (currentUser.uid === service?.userId) {
+     if (currentUser.uid === service?.userId) {
         toast({
             title: 'Este es tu servicio',
-            description: 'No puedes iniciar un chat contigo mismo.',
+            description: 'No puedes contratar tu propio servicio.',
         });
         return;
     }
-    router.push(`/chat?contact=${service?.userId}`);
+    setHiringModalOpen(true);
   };
 
   const handleReviewSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -407,17 +409,26 @@ export default function ServiceDetail() {
                     {isOwner ? (
                         <Button disabled className="w-full">Es tu servicio</Button>
                     ) : (
-                        <Button onClick={handleContact} className="w-full">
-                            <MessageSquare className="mr-2" />
-                            Enviar Mensaje
+                        <Button onClick={handleHire} className="w-full">
+                            <Briefcase className="mr-2" />
+                            Contratar Servicio
                         </Button>
                     )}
                 </CardContent>
             </Card>
         </div>
       </div>
+      {currentUser && !isOwner && (
+        <HiringModal
+            open={hiringModalOpen}
+            onOpenChange={setHiringModalOpen}
+            serviceId={serviceId}
+            serviceTitle={service.title}
+            servicePrice={service.price}
+            providerId={service.userId}
+            clientId={currentUser.uid}
+        />
+      )}
     </main>
   );
 }
-
-    
