@@ -5,7 +5,6 @@ import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
@@ -16,23 +15,45 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useProviderData } from "@/hooks/use-provider-data";
 import { suggestDescription } from "@/ai/flows/suggestion-flow";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 
+
+const addServiceSchema = z.object({
+  title: z.string().min(3, { message: "El título debe tener al menos 3 caracteres." }),
+  description: z.string().min(10, { message: "La descripción debe tener al menos 10 caracteres." }),
+  category: z.string({ required_error: "Por favor, selecciona una categoría." }),
+  price: z.coerce.number().positive({ message: "El precio debe ser un número positivo." }),
+  city: z.string().min(3, { message: "La ciudad debe tener al menos 3 caracteres." }),
+  zone: z.string().optional(),
+});
+
+type AddServiceFormValues = z.infer<typeof addServiceSchema>;
 
 export default function AddService() {
   const [user, authLoading] = useAuthState(auth);
   const { providerData, loading: providerLoading } = useProviderData();
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [price, setPrice] = useState("");
-  const [city, setCity] = useState("");
-  const [zone, setZone] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const [generatingDesc, setGeneratingDesc] = useState(false);
   const router = useRouter();
+
+  const form = useForm<AddServiceFormValues>({
+    resolver: zodResolver(addServiceSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      price: 0,
+      city: "",
+      zone: "",
+    },
+  });
+  
+  const isLoading = form.formState.isSubmitting || imageUploading || generatingDesc;
+
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -71,6 +92,7 @@ export default function AddService() {
   };
 
   const handleGenerateDescription = async () => {
+    const title = form.getValues("title");
     if (!title) {
         toast({
             variant: "destructive",
@@ -82,7 +104,7 @@ export default function AddService() {
     setGeneratingDesc(true);
     try {
         const result = await suggestDescription({ title });
-        setDescription(result);
+        form.setValue("description", result);
     } catch(e) {
         console.error(e);
         toast({
@@ -95,16 +117,7 @@ export default function AddService() {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!title || !description || !category || !price || !city) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Por favor, completa todos los campos obligatorios.",
-      });
-      return;
-    }
+  const onSubmit = async (data: AddServiceFormValues) => {
     if (!user || !providerData) {
        toast({
         variant: "destructive",
@@ -114,16 +127,9 @@ export default function AddService() {
       return;
     }
 
-    setLoading(true);
-
     try {
       await addDoc(collection(db, "services"), {
-        title,
-        description,
-        category,
-        price: parseFloat(price),
-        city,
-        zone,
+        ...data,
         imageUrl: imageUrl ?? "",
         userId: user.uid,
         providerName: providerData.displayName,
@@ -134,12 +140,7 @@ export default function AddService() {
         reviewCount: 0,
         averageRating: 0,
       });
-      setTitle("");
-      setDescription("");
-      setCategory("");
-      setPrice("");
-      setCity("");
-      setZone("");
+      form.reset();
       setImageUrl(null);
       setPreview(null);
       toast({
@@ -154,8 +155,6 @@ export default function AddService() {
         title: "Error",
         description: "No se pudo agregar el servicio.",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -204,44 +203,59 @@ export default function AddService() {
                 </div>
             </div>
           </CardHeader>
-          <form onSubmit={handleSubmit}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="title">Título</Label>
-                <Input
-                  id="title"
-                  placeholder="Ej: Fontanería de emergencia"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  disabled={loading}
-                  required
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <CardContent className="space-y-4">
+                 <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Título</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ej: Fontanería de emergencia" {...field} disabled={isLoading} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              <div className="space-y-2">
-                 <div className="flex justify-between items-center">
-                    <Label htmlFor="description">Descripción</Label>
-                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={generatingDesc || !title}>
-                        {generatingDesc ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Sugerir con IA
-                    </Button>
-                </div>
-                <Textarea
-                  id="description"
-                  placeholder="Describe tu servicio en detalle o usa la IA para generar una sugerencia."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  disabled={loading || generatingDesc}
-                  required
-                  rows={5}
+                 <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                       <div className="flex justify-between items-center">
+                          <FormLabel>Descripción</FormLabel>
+                          <Button type="button" variant="outline" size="sm" onClick={handleGenerateDescription} disabled={generatingDesc || !form.getValues("title")}>
+                              {generatingDesc ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                              Sugerir con IA
+                          </Button>
+                      </div>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Describe tu servicio en detalle o usa la IA para generar una sugerencia."
+                          rows={5}
+                          {...field}
+                          disabled={isLoading || generatingDesc}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="category">Categoría</Label>
-                         <Select onValueChange={setCategory} value={category} required>
-                            <SelectTrigger id="category" disabled={loading}>
+                  <FormField
+                    control={form.control}
+                    name="category"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Categoría</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                           <FormControl>
+                              <SelectTrigger>
                                 <SelectValue placeholder="Selecciona una categoría" />
-                            </SelectTrigger>
+                              </SelectTrigger>
+                           </FormControl>
                             <SelectContent>
                                 <SelectItem value="Hogar">Hogar</SelectItem>
                                 <SelectItem value="Tecnologia">Tecnología</SelectItem>
@@ -251,85 +265,92 @@ export default function AddService() {
                                 <SelectItem value="Otro">Otro</SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
-                    <div className="space-y-2">
-                        <Label htmlFor="price">Precio (COP)</Label>
-                        <Input
-                          id="price"
-                          type="number"
-                          placeholder="Ej: 50000"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          disabled={loading}
-                          required
-                          min="0"
-                        />
-                    </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="price"
+                    render={({ field }) => (
+                       <FormItem>
+                          <FormLabel>Precio (COP)</FormLabel>
+                          <FormControl>
+                            <Input type="number" placeholder="Ej: 50000" {...field} disabled={isLoading} min="0"/>
+                          </FormControl>
+                          <FormMessage />
+                       </FormItem>
+                    )}
+                  />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <Label htmlFor="city">Ciudad</Label>
-                        <Input
-                          id="city"
-                          placeholder="Ej: Bogotá"
-                          value={city}
-                          onChange={(e) => setCity(e.target.value)}
-                          disabled={loading}
-                          required
-                        />
-                    </div>
-                     <div className="space-y-2">
-                        <Label htmlFor="zone">Barrio/Zona (Opcional)</Label>
-                        <Input
-                          id="zone"
-                          placeholder="Ej: Chapinero"
-                          value={zone}
-                          onChange={(e) => setZone(e.target.value)}
-                          disabled={loading}
-                        />
-                    </div>
-                </div>
-              <div className="space-y-2">
-                <Label htmlFor="image">Imagen del Servicio</Label>
-                <div className="flex items-center gap-4">
-                    <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground relative">
-                        {preview ? (
-                            <Image src={preview} alt="Preview" fill objectFit="cover" className="rounded-lg"/>
-                        ) : (
-                            <Upload />
-                        )}
-                        {imageUploading && (
-                            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
-                                <Loader2 className="animate-spin h-8 w-8 text-primary" />
-                            </div>
-                        )}
-                         {imageUrl && !imageUploading && (
-                            <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
-                                <CheckCircle className="h-4 w-4 text-white" />
-                            </div>
-                        )}
-                    </div>
-                    <Input
-                      id="image"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="flex-1"
-                      disabled={loading || imageUploading}
+                    <FormField
+                      control={form.control}
+                      name="city"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ciudad</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej: Bogotá" {...field} disabled={isLoading} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="zone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Barrio/Zona (Opcional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ej: Chapinero" {...field} disabled={isLoading} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
                     />
                 </div>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button type="submit" className="w-full" disabled={loading || imageUploading || generatingDesc}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
-                Guardar Servicio
-              </Button>
-            </CardFooter>
-          </form>
+                <div className="space-y-2">
+                  <FormLabel>Imagen del Servicio</FormLabel>
+                  <div className="flex items-center gap-4">
+                      <div className="w-24 h-24 border-2 border-dashed rounded-lg flex items-center justify-center text-muted-foreground relative">
+                          {preview ? (
+                              <Image src={preview} alt="Preview" fill objectFit="cover" className="rounded-lg"/>
+                          ) : (
+                              <Upload />
+                          )}
+                          {imageUploading && (
+                              <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+                                  <Loader2 className="animate-spin h-8 w-8 text-primary" />
+                              </div>
+                          )}
+                           {imageUrl && !imageUploading && (
+                              <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
+                                  <CheckCircle className="h-4 w-4 text-white" />
+                              </div>
+                          )}
+                      </div>
+                      <Input
+                        id="image"
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="flex-1"
+                        disabled={isLoading}
+                      />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                  Guardar Servicio
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
         </Card>
     </main>
   );
 }
-
-    
