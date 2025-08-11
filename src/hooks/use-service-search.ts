@@ -11,6 +11,7 @@ export interface Service {
   category: string;
   imageUrl?: string;
   userId: string;
+  createdAt: any;
 }
 
 export function useServiceSearch() {
@@ -33,7 +34,7 @@ export function useServiceSearch() {
             setCategories(uniqueCategories);
 
             // Fetch recent services for the carousel
-            const recentQuery = query(collection(db, 'services'), orderBy('createdAt', 'desc'), limit(4));
+            const recentQuery = query(collection(db, 'services'), orderBy('createdAt', 'desc'), limit(8));
             const recentSnapshot = await getDocs(recentQuery);
             const recentData = recentSnapshot.docs.map(doc => ({
                 id: doc.id,

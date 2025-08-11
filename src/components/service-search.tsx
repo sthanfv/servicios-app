@@ -1,3 +1,4 @@
+
 'use client';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -66,7 +67,7 @@ function ServiceCardSkeleton() {
 
 function FeaturedServiceCard({ service }: { service: Service }) {
   return (
-    <Card className="h-full flex flex-col overflow-hidden group border-primary/20 hover:border-primary transition-all duration-300 transform hover:scale-105 hover:shadow-xl">
+    <Card className="h-full flex flex-col overflow-hidden group border-transparent hover:border-primary transition-all duration-300 transform hover:scale-105 hover:shadow-xl bg-card">
        <Link href={`/service/${service.id}`} className="block">
         <div className="relative w-full aspect-[4/3]">
             {service.imageUrl ? (
@@ -75,25 +76,26 @@ function FeaturedServiceCard({ service }: { service: Service }) {
                 alt={service.title}
                 layout="fill"
                 objectFit="cover"
-                className="rounded-t-xl"
+                className="rounded-t-lg"
                 data-ai-hint="featured service"
             />
             ) : (
-            <div className="w-full h-full bg-muted flex items-center justify-center rounded-t-xl">
+            <div className="w-full h-full bg-muted/50 flex items-center justify-center rounded-t-lg">
                 <span className="text-muted-foreground">Sin imagen</span>
             </div>
             )}
         </div>
       </Link>
       <CardHeader>
-        <CardTitle className="line-clamp-2 text-lg">{service.title}</CardTitle>
+        <CardTitle className="line-clamp-1 text-base font-semibold">{service.title}</CardTitle>
+        <Badge variant="secondary" className="w-fit">{service.category}</Badge>
       </CardHeader>
       <CardContent className="flex-grow">
-         <Badge variant="secondary">{service.category}</Badge>
+         <p className="text-sm text-muted-foreground line-clamp-2">{service.description}</p>
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full">
-            <Link href={`/service/${service.id}`}>Ver Más</Link>
+        <Button asChild className="w-full" variant="outline">
+            <Link href={`/service/${service.id}`}>Ver Detalles</Link>
         </Button>
       </CardFooter>
     </Card>
@@ -113,19 +115,19 @@ export function ServiceSearch() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
+      <div className="flex flex-col md:flex-row gap-4 mb-8 max-w-2xl mx-auto">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Buscar por título o descripción..."
-            className="pl-10"
+            placeholder="Buscar por título, descripción..."
+            className="pl-10 h-12 text-base"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full md:w-[200px]">
-            <SelectValue placeholder="Categorías" />
+          <SelectTrigger className="w-full md:w-[240px] h-12 text-base">
+            <SelectValue placeholder="Todas las categorías" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Todas las categorías</SelectItem>
@@ -145,7 +147,7 @@ export function ServiceSearch() {
             ))}
         </div>
       ) : services.length === 0 ? (
-        <div className="text-center py-20 border-2 border-dashed rounded-lg">
+        <div className="text-center py-20 border-2 border-dashed rounded-lg bg-card">
           <h3 className="text-xl font-semibold">No se encontraron servicios</h3>
           <p className="text-muted-foreground mt-2">
             Intenta ajustar tu búsqueda o filtros.
@@ -163,4 +165,5 @@ export function ServiceSearch() {
 }
 
 ServiceSearch.FeaturedCard = FeaturedServiceCard;
+
     

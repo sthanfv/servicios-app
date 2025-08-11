@@ -1,3 +1,4 @@
+
 'use client';
 import Link from "next/link";
 import Image from "next/image";
@@ -171,7 +172,7 @@ export default function Home() {
         </section>
 
         {/* Recent Services Section */}
-        <section className="py-16">
+        <section className="bg-muted py-16">
             <div className="container">
                 <div className="text-center mb-12">
                     <h2 className="text-3xl md:text-4xl font-bold">Novedades</h2>
@@ -200,7 +201,7 @@ export default function Home() {
         </section>
 
         {/* Benefits Section */}
-        <section className="bg-muted py-16">
+        <section className="py-16">
             <div className="container grid md:grid-cols-3 gap-8 text-center">
                 <div className="flex flex-col items-center gap-4">
                     <div className="bg-primary/10 p-3 rounded-full">
@@ -227,18 +228,20 @@ export default function Home() {
         </section>
 
         {/* Services Section */}
-        <section id="services-section" className="container py-16">
-             <div className="text-center mb-12">
-                <h2 className="text-3xl md:text-4xl font-bold">Descubre Servicios</h2>
-                <p className="text-muted-foreground max-w-xl mx-auto mt-2">
-                    Usa nuestro buscador para encontrar exactamente lo que necesitas.
-                </p>
+        <section id="services-section" className="bg-muted py-16">
+             <div className="container">
+                <div className="text-center mb-12">
+                    <h2 className="text-3xl md:text-4xl font-bold">Descubre Servicios</h2>
+                    <p className="text-muted-foreground max-w-xl mx-auto mt-2">
+                        Usa nuestro buscador para encontrar exactamente lo que necesitas.
+                    </p>
+                </div>
+                <ServiceSearch />
             </div>
-            <ServiceSearch />
         </section>
 
         {/* Testimonials Section */}
-        <section className="bg-muted py-16">
+        <section className="py-16">
           <div className="container">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold">Lo que dicen nuestros usuarios</h2>
@@ -286,19 +289,21 @@ export default function Home() {
         </section>
 
         {/* CTA Section */}
-        <section className="container py-16">
-          <div className="bg-card border rounded-xl p-8 md:p-12 text-center">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              ¿Listo para empezar?
-            </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-              Únete a nuestra comunidad hoy mismo. Es gratis y solo toma un minuto.
-            </p>
-            <div className="flex justify-center gap-4">
-                <Button size="lg" asChild className="w-full sm:w-auto">
-                    <Link href="/signup">Crear una cuenta</Link>
-                </Button>
-            </div>
+        <section className="bg-muted py-16">
+          <div className="container">
+              <div className="bg-card border rounded-xl p-8 md:p-12 text-center">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  ¿Listo para empezar?
+                </h2>
+                <p className="text-muted-foreground max-w-xl mx-auto mb-8">
+                  Únete a nuestra comunidad hoy mismo. Es gratis y solo toma un minuto.
+                </p>
+                <div className="flex justify-center gap-4">
+                    <Button size="lg" asChild className="w-full sm:w-auto">
+                        <Link href="/signup">Crear una cuenta</Link>
+                    </Button>
+                </div>
+              </div>
           </div>
         </section>
       </main>
@@ -310,3 +315,5 @@ export default function Home() {
     </div>
   );
 }
+
+    
