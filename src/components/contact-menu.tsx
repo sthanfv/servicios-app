@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { MessageSquare, X, Phone, Mail } from 'lucide-react';
+import { MessageSquare, X, Phone, Robot } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { ContactForm } from './contact-form';
+import { SupportChatbot } from './support-chatbot';
+import { Separator } from './ui/separator';
 
 export function ContactMenu() {
     const [isOpen, setIsOpen] = useState(false);
@@ -21,10 +22,14 @@ export function ContactMenu() {
                    {isOpen ? <X className="h-6 w-6" /> : <MessageSquare className="h-6 w-6" />}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 mr-4 mb-2 p-2" side="top" align="end">
-                <div className="flex flex-col gap-2">
-                    <p className="font-bold text-center p-2">¿Necesitas ayuda?</p>
-                    <button onClick={handleWhatsAppClick} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors">
+            <PopoverContent className="w-80 mr-4 mb-2 p-0" side="top" align="end">
+                <div className="p-3">
+                    <p className="font-bold text-center">¿Necesitas ayuda?</p>
+                </div>
+                <Separator />
+                <div className="p-2 flex flex-col gap-1">
+                    <SupportChatbot />
+                    <button onClick={handleWhatsAppClick} className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors w-full text-left">
                         <div className="p-2 bg-muted rounded-full">
                            <Phone className="w-5 h-5 text-muted-foreground" />
                         </div>
@@ -33,7 +38,6 @@ export function ContactMenu() {
                             <p className="text-sm text-muted-foreground">Respuesta rápida</p>
                         </div>
                     </button>
-                    <ContactForm />
                 </div>
             </PopoverContent>
         </Popover>
