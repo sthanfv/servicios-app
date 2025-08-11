@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
 import { Inter } from 'next/font/google';
+import { ContactMenu } from '@/components/contact-menu';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -44,6 +45,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           {children}
+          <ContactMenu />
           <Toaster />
         </ThemeProvider>
       </body>
