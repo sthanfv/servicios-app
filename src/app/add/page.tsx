@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Upload, LogIn } from "lucide-react";
+import { ArrowLeft, Upload, LogIn, CheckCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Image from 'next/image';
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -20,16 +20,45 @@ export default function AddService() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [image, setImage] = useState<File | null>(null);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [imageUploading, setImageUploading] = useState(false);
   const router = useRouter();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      setImage(file);
       setPreview(URL.createObjectURL(file));
+      setImageUploading(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        if (!res.ok) {
+           throw new Error('Image upload failed');
+        }
+        const data = await res.json();
+        setImageUrl(data.url);
+        toast({
+            title: "¡Éxito!",
+            description: "Imagen subida correctamente.",
+        });
+      } catch(uploadError) {
+         console.error(uploadError);
+         toast({
+            variant: "destructive",
+            title: "Error de carga",
+            description: "No se pudo subir la imagen.",
+          });
+         setPreview(null);
+      } finally {
+        setImageUploading(false);
+      }
     }
   };
 
@@ -53,47 +82,20 @@ export default function AddService() {
     }
 
     setLoading(true);
-    
-    let imageUrl = "";
-    if (image) {
-      const formData = new FormData();
-      formData.append("file", image);
-      try {
-        const res = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-        if (!res.ok) {
-           throw new Error('Image upload failed');
-        }
-        const data = await res.json();
-        imageUrl = data.url;
-      } catch(uploadError) {
-         console.error(uploadError);
-         toast({
-            variant: "destructive",
-            title: "Error de carga",
-            description: "No se pudo subir la imagen.",
-          });
-         setLoading(false);
-         return;
-      }
-    }
-
 
     try {
       await addDoc(collection(db, "services"), {
         title,
         description,
         category,
-        imageUrl,
+        imageUrl: imageUrl ?? "",
         userId: user.uid,
         createdAt: Timestamp.now(),
       });
       setTitle("");
       setDescription("");
       setCategory("");
-      setImage(null);
+      setImageUrl(null);
       setPreview(null);
       toast({
         title: "¡Éxito!",
@@ -198,6 +200,16 @@ export default function AddService() {
                         ) : (
                             <Upload />
                         )}
+                        {imageUploading && (
+                            <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg">
+                                <Loader2 className="animate-spin h-8 w-8 text-primary" />
+                            </div>
+                        )}
+                         {imageUrl && !imageUploading && (
+                            <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
+                                <CheckCircle className="h-4 w-4 text-white" />
+                            </div>
+                        )}
                     </div>
                     <Input
                       id="image"
@@ -205,14 +217,15 @@ export default function AddService() {
                       accept="image/*"
                       onChange={handleImageChange}
                       className="flex-1"
-                      disabled={loading}
+                      disabled={loading || imageUploading}
                     />
                 </div>
               </div>
             </CardContent>
             <CardFooter>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Guardando..." : "Guardar Servicio"}
+              <Button type="submit" className="w-full" disabled={loading || imageUploading}>
+                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : null}
+                Guardar Servicio
               </Button>
             </CardFooter>
           </form>
