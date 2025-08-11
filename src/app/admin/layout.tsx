@@ -15,8 +15,11 @@ export default function AdminLayout({
   const { userData, loading } = useUserData();
   const router = useRouter();
 
+  // This effect acts as a route guard.
   useEffect(() => {
+    // If loading is finished, check the user's role.
     if (!loading) {
+      // If there's no user data or the role is not 'admin', redirect to home.
       if (!userData || userData.role !== 'admin') {
         router.replace('/');
       }
@@ -24,6 +27,8 @@ export default function AdminLayout({
   }, [userData, loading, router]);
 
 
+  // While loading, or if the user is not an admin, show a loading screen.
+  // This prevents flashing unauthorized content.
   if (loading || !userData || userData.role !== 'admin') {
     return (
       <div className="flex h-screen w-full items-center justify-center">
@@ -33,6 +38,7 @@ export default function AdminLayout({
     );
   }
   
+  // If the user is an admin, render the admin layout.
   return (
     <SidebarProvider>
         <Sidebar>

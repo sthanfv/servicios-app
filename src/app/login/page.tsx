@@ -32,19 +32,20 @@ export default function Login() {
   const { toast } = useToast();
   const router = useRouter();
 
+  // This function ensures a user document exists in Firestore and then redirects.
   const handleSuccessfulLogin = async (user: User) => {
     const userDocRef = doc(db, "users", user.uid);
     const userDocSnap = await getDoc(userDocRef);
 
+    // If user doc doesn't exist (e.g., first-time Google login), create it.
     if (!userDocSnap.exists()) {
-      // If user doc doesn't exist (e.g., first time Google login), create it
       await setDoc(userDocRef, {
         uid: user.uid,
         displayName: user.displayName,
         email: user.email,
         createdAt: Timestamp.now(),
         role: 'user', // Default role
-        favoriteServices: [] // Initialize favorites
+        favoriteServices: []
       });
     }
     
@@ -53,9 +54,10 @@ export default function Login() {
       description: "¡Bienvenido de vuelta!",
     });
     
-    // The redirection logic is now handled on the main page after state is updated.
-    router.push('/');
+    // Redirect to the home page. The home page will handle role-based redirection.
+    router.replace('/'); 
   };
+
 
   const handleLogin = async (provider: 'email' | 'google') => {
     setLoading(true);

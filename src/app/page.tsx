@@ -23,9 +23,9 @@ function UserMenu() {
     const { theme, setTheme } = useTheme();
     const router = useRouter();
 
+    // This effect handles role-based redirection after login and data is loaded.
     useEffect(() => {
-        // This effect handles role-based redirection after login.
-        if (!userDataLoading && userData && userData.role === 'admin') {
+        if (!userDataLoading && userData?.role === 'admin') {
             router.replace('/admin');
         }
     }, [userData, userDataLoading, router]);
